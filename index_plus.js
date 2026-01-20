@@ -25,7 +25,7 @@ const OPT = { //网站配置
   "themeURL" : "https://raw.githubusercontent.com/Arronlong/cfblog-plus/master/themes/JustNews/", // 模板地址,以 "/"" 结尾
   //"search_xml_url":"", //search.xml外部链接，可通过github的action自动生成，不设置则实时生成
   //"sitemap_xml_url":"", //sitemap.xml外部链接，可通过github的action自动生成，不设置则实时生成
-  
+
   "pageSize" : 5,//每页文章数
   "recentlySize" : 6,//最近文章数
   "recentlyType" : 1,//最近文章类型：1-按创建时间倒序（按id倒序），2-按修改时间排序
@@ -34,8 +34,102 @@ const OPT = { //网站配置
   "html404" : `<b>404</b>`,//404页面代码
   "codeBeforHead":`
   <script src="https://cdn.staticfile.org/jquery/2.2.4/jquery.min.js"></script>
+  <style>
+    .footer .copyright p {
+      line-height: 1.8;
+    }
+    /* 导航栏样式调整 */
+    .header .container {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+    .header .navbar-header {
+      float: none !important;
+      white-space: nowrap !important;
+      width: auto !important;
+    }
+    .header .logo {
+      display: inline-block !important;
+      vertical-align: middle !important;
+      float: none !important;
+    }
+    .header .logo a {
+      display: inline-block !important;
+      vertical-align: middle !important;
+    }
+    .header .logo img {
+      display: inline-block !important;
+      vertical-align: middle !important;
+    }
+    .header .site-name {
+      display: inline-block !important;
+      vertical-align: middle !important;
+      margin-left: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+    .header .navbar-collapse {
+      float: none !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    .header .primary-menu {
+      float: none !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+    .header .primary-menu .menu-item {
+      margin-right: 20px;
+    }
+    .header .navbar-action {
+      margin-left: 20px;
+      display: flex !important;
+      align-items: center !important;
+    }
+  </style>
   `,//其他代码,显示在</head>前
   "codeBeforBody":`
+  <script>
+    // 调整导航栏布局 - 将网站名称放到 logo div 里面
+    $('.header .logo a').after('<span class="site-name">Dear 王甜甜</span>');
+
+    // 添加社交媒体图标
+    $('.footer-sns').html(\`
+      <a href="mailto:你的邮箱@example.com">
+        <i class="sns-icon fa fa-envelope"></i>
+      </a>
+      <a href="https://weibo.com/你的ID" target="_blank" rel="nofollow">
+        <i class="sns-icon fa fa-weibo"></i>
+      </a>
+    \`);
+
+    // 动态生成版权信息和运行时间
+    var startYear = 2026; // 修改为你的网站创建年份
+    var currentYear = new Date().getFullYear();
+    var yearRange = startYear === currentYear ? startYear : startYear + '-' + currentYear;
+
+    function showRunTime() {
+      var start = new Date('2026/01/20 00:00:00'); // 修改为你的网站创建日期
+      var now = new Date();
+      var diff = now - start;
+      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      $('#runTime').html('本站已运行 ' + days + ' 天 ' + hours + ' 小时 ' + minutes + ' 分 ' + seconds + ' 秒');
+    }
+
+    $('.footer .copyright p').html(\`
+      Copyright © \${yearRange} 王甜甜<br>
+      <span id="runTime">加载中...</span><br>
+      Powered by <a href="https://www.cloudflare.com">Cloudflare</a> & <a href="https://blog.arrontg.cf">CFBlog-Plus</a> & <a href="https://blog.gezhong.vip">CF-Blog</a>
+    \`);
+
+    showRunTime();
+    setInterval(showRunTime, 1000);
+  </script>
   `,//其他代码,显示在</body>前
   "commentCode":`
   <script>
@@ -50,12 +144,12 @@ const OPT = { //网站配置
   "otherCodeC":``,//
   "otherCodeD":``,//
   "otherCodeE":``,//
-  "copyRight" :`Powered by <a href="https://www.cloudflare.com">Cloudflare</a> & <a href="https://blog.arrontg.cf">CFBlog-Plus</a> & <a href="https://blog.gezhong.vip">CF-Blog </a>`,//自定义版权信息,建议保留大公无私的 Coudflare 和 作者 的链接
+  "copyRight" :``,//自定义版权信息,建议保留大公无私的 Coudflare 和 作者 的链接
   "robots":`User-agent: *
 Disallow: /admin`,//robots.txt设置
-  
+
   /*--前后台共用参数--*/
-  
+
   "top_flag":`<topflag>[置顶]</topflag>`,//置顶标志
   "top_flag_style":`<style>topflag {color:#ff5722}</style>`,//置顶标志的样式
 
@@ -64,7 +158,7 @@ Disallow: /admin`,//robots.txt设置
 
   "hidden_flag":`<hiddenflag>[隐藏]</hiddenflag>`,//隐藏标志
   "hidden_flag_style":`<style>hiddenflag {color:#000000;background-color: #ffff00;}</style>`,//隐藏标志的样式
-  
+
   "admin_home_idx": 1, //后台首页tab索引设置：1-我的文章,2-新建,3-设置,4-发布
   "editor_page_scripts": `
     //置顶设置
@@ -103,7 +197,7 @@ Disallow: /admin`,//robots.txt设置
     $('form#importForm a').last().after(sitemapxml);//设置页面添加导出sitemap.xml导出按钮
     let searchxml=\`<a  tabindex="0"  role="button"  type="submit" id="btn_export" class="btn btn-default"  href="/admin/search.xml" >导出search.xml</a>\`
     $('form#importForm a').last().after(searchxml);//设置页面添加导出search.xml导出按钮
-    
+
     //关闭email匹配和@匹配，否则图片使用jsdelivr的cdn，如果有版本号会匹配成“mailto:xxx”从而导致显示异常
     mdEditor.settings.emailLink=false;
     mdEditor.settings.atLink=false;
@@ -119,11 +213,11 @@ Disallow: /admin`,//robots.txt设置
     mdEditor.settings.tex=true;// 默认不解析
     mdEditor.settings.flowChart=true; // 默认不解析
     mdEditor.settings.sequenceDiagram=true;// 默认不解析
-    
+
     //开启全局html标签解析-不推荐
     //mdEditor.settings.htmlDecode=true;
-    
-    window.mdEditor=mdEditor;    
+
+    window.mdEditor=mdEditor;
     //editormd工具栏上添加html标签解析开关
     mdEditor.getToolbarHandles().parseHtml=function(){
       let ele = $(".editormd-menu li a i:last");
@@ -153,7 +247,7 @@ Disallow: /admin`,//robots.txt设置
 {
   //CFBLOG 通用变量
   this.CFBLOG = ACCOUNT.kv_var;
-  
+
   //默认为非私密博客
   if(null==OPT.privateBlog){
     OPT.privateBlog=false;
@@ -242,7 +336,7 @@ async function handlerRequest(event){
         status:200
       })
       break;
-  }  
+  }
   //设置浏览器缓存时间:后台不缓存、只缓存前台
   try{
     if("admin"==paths[0]){
@@ -252,7 +346,7 @@ async function handlerRequest(event){
       event.waitUntil(D.put(M,k.clone()))
     }
   }catch(e){}
-  
+
   return k
 }
 
@@ -294,13 +388,13 @@ async function handle_sitemap(request){
   //可使用github action方式自动定期更新
   let xml;
   if(OPT.sitemap_xml_url){
-    
+
     //cf代理方式，速度可以，实时性更好
     let url = new URL(request.url)
     url.href = OPT.sitemap_xml_url.replace('cdn.jsdelivr.net/gh','raw.githubusercontent.com').replace('@','/');
     xml = await fetch(new Request(url, request));
     xml = await xml.text();
-    
+
     ////302方式，如果使用jsdelivr作为cdn，速度快，但更新有延迟
     //return new Response("",{
     //    headers:{
@@ -308,9 +402,9 @@ async function handle_sitemap(request){
     //    },
     //    status:302
     //});
-  
+
   }else{ //未配置参数，则实时获取结构
-  
+
     //读取文章列表，并按照特定的xml格式进行组装
     let articles_all=await getArticlesList()
     xml='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
@@ -338,13 +432,13 @@ async function handle_search(request){
   //可使用github action方式自动定期更新
   let xml;
   if(OPT.search_xml_url){
-    
+
     //cf代理方式，速度可以，实时性更好
     let url = new URL(request.url)
     url.href = OPT.search_xml_url.replace('cdn.jsdelivr.net/gh','raw.githubusercontent.com').replace('@','/');
     xml = await fetch(new Request(url, request));
     xml = await xml.text();
-    
+
     ////302方式，如果使用jsdelivr作为cdn，速度快，但更新有延迟
     //return new Response("",{
     //    headers:{
@@ -352,9 +446,9 @@ async function handle_search(request){
     //    },
     //    status:302
     //});
-  
+
   }else{ //未配置参数，则实时获取结构
-  
+
     //读取文章列表，并按照特定的xml格式进行组装
     let articles_all=await getArticlesList()
     xml='<?xml version="1.0" encoding="UTF-8"?>\n<blogs>';
@@ -382,7 +476,7 @@ async function handle_search(request){
 //渲染前端博客：指定一级路径page\tags\category，二级路径value，以及页码，默认第一页
 async function renderBlog(url){
   console.log("---进入renderBlog函数---，path=", url.href.substr(url.origin.length))
-  
+
   //处理主题预览及分页
   let theme=url.searchParams.get("theme"),
       pageSize=url.searchParams.get("pageSize");
@@ -397,7 +491,7 @@ async function renderBlog(url){
     OPT.themeURL=OPT.theme_github_path+"default2.0/";
   }
   console.log("theme pageSize",OPT.pageSize,OPT.themeURL)
-  
+
   //获取主页模板源码
   let theme_html=await getThemeHtml("index"),
       //KV中读取导航栏、分类目录、标签、链接、所有文章、近期文章等配置信息
@@ -407,18 +501,18 @@ async function renderBlog(url){
       links=await getWidgetLink(),
       articles_all=await getArticlesList(),
       articles_recently=await getRecentlyArticles(articles_all);
-  
+
   /** 前台博客
    *  路径格式：
    *  域名/              文章列表首页，等价于域名/page/1
    *  域名/page/xxx      文章列表翻页
-   * 
+   *
    *  域名/category/xxx  分类页，等价于域名/category/xxx/page/1
    *  域名/category/xxx/page/xxx  分类页+翻页
-   * 
+   *
    *  域名/tags/xxx      标签页，等价于域名/tags/xxx/page/1
    *  域名/tags/xxx/page/xxx  分类页+翻页
-   * 
+   *
    */
   let paths = url.pathname.trim("/").split("/")
   let articles=[],
@@ -447,7 +541,7 @@ async function renderBlog(url){
   //获取当页要显示文章列表
   let articles_show = articles.slice((pageNo-1)*OPT.pageSize,pageNo*OPT.pageSize);
   // console.log(articles_show)
-  
+
   //处理文章属性（年月日、url等）
   processArticleProp(articles_show);
 
@@ -483,12 +577,12 @@ async function renderBlog(url){
   cfg.pageOlder=older,//下翻页链接
   cfg.title=title,//网页title
   cfg.keyWords=keyWord;//SEO关键字
-  
+
   //使用mustache.js进行页面渲染（参数替换）
   cfg.OPT=OPT
-  
+
   let html = Mustache.render(theme_html,cfg)
-  
+
   return new Response(html,{
     headers:{
       "content-type":"text/html;charset=UTF-8"
@@ -510,15 +604,15 @@ async function handle_article(id){
 
   //获取上篇、本篇、下篇文章
   let articles_sibling=await getSiblingArticle(id);
-  
+
   //处理文章属性（年月日、url等）
   processArticleProp(articles_sibling);
-  
+
   //获取本篇文章
   let article=articles_sibling[1];
 
   //组装文章详情页各参数
-  let title=article.title.replace(nullToEmpty(OPT.top_flag),'').replace(nullToEmpty(OPT.hidden_flag),'')+" - "+OPT.siteName, 
+  let title=article.title.replace(nullToEmpty(OPT.top_flag),'').replace(nullToEmpty(OPT.hidden_flag),'')+" - "+OPT.siteName,
       keyWord=article.tags.concat(article.category).join(","),
       cfg={};
   cfg.widgetMenuList=menus,//导航
@@ -531,10 +625,10 @@ async function handle_article(id){
   cfg.articleNewer=articles_sibling[2]?[articles_sibling[2]]:[],//下篇文章
   cfg.title=title,//网页title
   cfg.keyWords=keyWord;//SEO关键字
-  
+
   //使用mustache.js渲染页面（参数替换）
   cfg.OPT=OPT
-  
+
   let html = Mustache.render(theme_html,cfg)
 
   //以html格式返回
@@ -561,12 +655,12 @@ async function handle_admin(request){
         categoryJson=await getWidgetCategory(),
         menuJson=await getWidgetMenu(),
         linkJson=await getWidgetLink();
-    
+
     //手动替换<!--{xxx}-->格式的参数
     html = theme_html.replaceHtmlPara("categoryJson",JSON.stringify(categoryJson))
                     .replaceHtmlPara("menuJson",JSON.stringify(menuJson))
                     .replaceHtmlPara("linkJson",JSON.stringify(linkJson))
-                    
+
     //添加后台首页配置
     if(OPT.admin_home_idx && OPT.admin_home_idx>=1 && OPT.admin_home_idx<=4){
       html = html.replace("$('#myTab li:eq(0) 1').tab('show')","$($('#myTab a[href*=\"'+location.hash+'\"]')[0]||$('#myTab a:eq("+OPT.admin_home_idx+")')).tab('show')")
@@ -586,15 +680,15 @@ async function handle_admin(request){
     //KV中获取文章列表
     let articles_all=await getAllArticlesList(),
         tags=[]; //操作标签
-    
+
     //遍历所有文章，汇集所有的tag
     for(var i=0;i<articles_all.length;i++){
       //若文章设定了标签
       if("object"==typeof articles_all[i].tags){
         //将所有tags存入e中
         for(var j=0;j<articles_all[i].tags.length;j++){
-          if(articles_all[i].tags[j] 
-            && articles_all[i].tags[j].length>0 
+          if(articles_all[i].tags[j]
+            && articles_all[i].tags[j].length>0
             && -1==tags.indexOf(articles_all[i].tags[j])){
             tags.push(articles_all[i].tags[j]);
           }
@@ -604,9 +698,9 @@ async function handle_admin(request){
     console.log(articles_all)
     //将所有标签一次性写入到KV中，并清除缓存
     await saveWidgetTags(JSON.stringify(tags))
-    
+
     json = await purge()?'{"msg":"published ,purge Cache true","rst":true}':'{"msg":"published ,buuuuuuuuuuuut purge Cache false !!!!!!","rst":true}'
-      
+
   }
 
   //文章列表
@@ -616,7 +710,7 @@ async function handle_admin(request){
         list=await admin_nextPage(pageNo, 20);//每次加载20个
     json = JSON.stringify(list)
   }
-  
+
   //修改文章
   if("edit"==paths[1]){
     let id=paths[2],
@@ -626,18 +720,18 @@ async function handle_admin(request){
         categoryJson=JSON.stringify(await getWidgetCategory()),
         //KV中读取文章内容
         articleJson=JSON.stringify(await getArticle(id));
-    
+
     //手动替换<!--{xxx}-->格式的参数
     html = theme_html.replaceHtmlPara("categoryJson",categoryJson).replaceHtmlPara("articleJson",articleJson.replaceAll("script>","script＞"))
   }
-  
+
   //保存配置
   if("saveConfig"==paths[1]){
     const ret=await parseReq(request);
     let widgetCategory=ret.WidgetCategory,//分类
         widgetMenu=ret.WidgetMenu,//导航
         widgetLink=ret.WidgetLink;//链接
-    
+
     //判断格式，写入分类、导航、链接到KV中
     if(checkFormat(widgetCategory) && checkFormat(widgetMenu) && checkFormat(widgetLink)){
       let success = await saveWidgetCategory(widgetCategory)
@@ -648,12 +742,12 @@ async function handle_admin(request){
       json = '{"msg":"Not a JSON object","rst":false}'
     }
   }
-  
+
   //导入
   if("import"==paths[1]){
     let importJsone=(await parseReq(request)).importJson;
     console.log("开始导入",typeof importJson)
-    
+
     if(checkFormat(importJson)){
       let importJson=JSON.parse(importJson),
           keys=Object.keys(importJson);
@@ -664,9 +758,9 @@ async function handle_admin(request){
       json = '{"msg":"import success!","rst":true}'
     }else{
       json = '{"msg":" importJson Not a JSON object","rst":false}'
-    }        
+    }
   }
-  
+
   //导出
   if("export"===paths[1]){
     console.log("开始导出");
@@ -689,15 +783,15 @@ async function handle_admin(request){
       }
       return await exportArticle(arr,list.cursor,limit)
     }
-    
+
     let articles=await exportArticle();
     file = {
       name: "cfblog-"+new Date().getTime()+".json",
       content: JSON.stringify(articles)
     }
   }
-  
-  //导出search.xml 
+
+  //导出search.xml
   if("search.xml"===paths[1]){
     console.log("开始导出");
     //读取文章列表，并按照特定的xml格式进行组装
@@ -720,8 +814,8 @@ async function handle_admin(request){
       content: xml
     }
   }
-  
-  //导出sitemap.xml 
+
+  //导出sitemap.xml
   if("sitemap.xml"===paths[1]){
     console.log("开始导出");
     //读取文章列表，并按照特定的xml格式进行组装
@@ -741,7 +835,7 @@ async function handle_admin(request){
       content: xml
     }
   }
-  
+
   //新建文章
   if("saveAddNew"==paths[1]){
     const ret=await parseReq(request);
@@ -760,7 +854,7 @@ async function handle_admin(request){
         modify_timestamp=new Date().getTime()+8*60*60*1000,//修改时间戳
         hidden=ret.hidden*1,//是否隐藏
         id="";//文章id
-    
+
     //校验参数完整性
     if(title.length>0
       && createDate.length>0
@@ -788,10 +882,10 @@ async function handle_admin(request){
         hidden:hidden,
         changefreq:changefreq
       };
-      
+
       //将文章json写入KV（key为文章id，value为文章json字符串）
       await saveArticle(id,JSON.stringify(article));
-      
+
       //组装文章json
       let articleWithoutHtml={
         id:id,
@@ -810,19 +904,19 @@ async function handle_admin(request){
       },
       articles_all_old=await getAllArticlesList(),//读取文章列表
       articles_all=[];
-    
+
       //将最新的文章写入文章列表中，并按id排序后，再次回写到KV中
       articles_all.push(articleWithoutHtml),
       articles_all=articles_all.concat(articles_all_old),
       articles_all=sortArticle(articles_all),
       await saveArticlesList(JSON.stringify(articles_all))
-      
+
       json = '{"msg":"added OK","rst":true,"id":"'+id+'"}'
     }else{
       json = '{"msg":"信息不全","rst":false}'
     }
   }
-  
+
   //删除
   if("delete"==paths[1]){
     let id=paths[2]
@@ -832,7 +926,7 @@ async function handle_admin(request){
       for(r=0;r<e.length;r++){
         if(id==e[r].id){
           e.splice(r,1);
-          
+
           await saveArticlesList(JSON.stringify(e))
           json = '{"msg":"Delete ('+id+')  OK","rst":true,"id":"'+id+'"}'
           break;
@@ -842,7 +936,7 @@ async function handle_admin(request){
       json = '{"msg":"Delete  false ","rst":false,"id":"'+id+'"}'
     }
   }
-  
+
   //保存编辑的文章
   if("saveEdit"==paths[1]){
     const ret=await parseReq(request);
@@ -861,14 +955,14 @@ async function handle_admin(request){
         modify_timestamp=new Date().getTime()+8*60*60*1000,//修改时间戳
         hidden=ret.hidden*1,//是否隐藏
         id=ret.id;//文章id
-        
+
     //校验参数完整性
     if(title.length>0
       && createDate.length>0
       && category.length>0
       && contentMD.length>0
       && contentHtml.length>0){
-          
+
       contentText=contentHtml.replace(/<\/?[^>]*>/g,"").trim().substring(0,OPT.readMoreLength);//摘要
       //组装文章json
       let article={
@@ -888,10 +982,10 @@ async function handle_admin(request){
         hidden:hidden,
         changefreq:changefreq
       };
-      
+
       //将文章json写入KV（key为文章id，value为文章json字符串）
       await saveArticle(id,JSON.stringify(article));
-      
+
       //组装文章json
       let articleWithoutHtml={
         id:id,
@@ -925,7 +1019,7 @@ async function handle_admin(request){
       json = '{"msg":"信息不全","rst":false}'
     }
   }
-  
+
   //返回结果
   if(!json &&!html && !file){
     json = '{"msg":"some errors","rst":false}'
@@ -984,7 +1078,7 @@ function parseBasicAuth(request){
 //获取所有【公开】文章：仅前台使用
 async function getArticlesList(){
   let articles_all = await getAllArticlesList();
-  
+
   for(var i=0;i<articles_all.length;i++)
     if(articles_all[i].hidden){
         articles_all.splice(i,1);
@@ -1041,12 +1135,12 @@ function processArticleProp(articles){
 async function getThemeHtml(template_path){
   template_path=template_path.replace(".html","")
   let html = await (await fetch(OPT.themeURL+template_path+".html",{cf:{cacheTtl:600}})).text();
-  
+
   //对后台编辑页下手
   if("admin/index|admin/editor".includes(template_path)){
       html = html.replace("$('#WidgetCategory').val(JSON.stringify(categoryJson))",OPT.editor_page_scripts+"$('#WidgetCategory').val(JSON.stringify(categoryJson))")
   }
-  
+
   return html
 }
 
