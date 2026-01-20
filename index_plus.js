@@ -35,68 +35,22 @@ const OPT = { //网站配置
   "codeBeforHead":`
   <script src="https://cdn.staticfile.org/jquery/2.2.4/jquery.min.js"></script>
   <style>
+    /* 主色调 */
+    .header { background: #34495e !important; }
+    a { color: #3498db !important; }
+    a:hover { color: #2980b9 !important; }
     .footer .copyright p {
       line-height: 1.8;
-    }
-    /* 导航栏样式调整 */
-    .header .container {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-    }
-    .header .navbar-header {
-      float: none !important;
-      white-space: nowrap !important;
-      width: auto !important;
-    }
-    .header .logo {
-      display: inline-block !important;
-      vertical-align: middle !important;
-      float: none !important;
-    }
-    .header .logo a {
-      display: inline-block !important;
-      vertical-align: middle !important;
-    }
-    .header .logo img {
-      display: inline-block !important;
-      vertical-align: middle !important;
-    }
-    .header .site-name {
-      display: inline-block !important;
-      vertical-align: middle !important;
-      margin-left: 10px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #333;
-    }
-    .header .navbar-collapse {
-      float: none !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-    .header .primary-menu {
-      float: none !important;
-      display: flex !important;
-      align-items: center !important;
-    }
-    .header .primary-menu .menu-item {
-      margin-right: 20px;
-    }
-    .header .navbar-action {
-      margin-left: 20px;
-      display: flex !important;
-      align-items: center !important;
     }
   </style>
   `,//其他代码,显示在</head>前
   "codeBeforBody":`
   <script>
-    // 调整导航栏布局 - 将网站名称放到 logo div 里面
-    $('.header .logo a').after('<span class="site-name">Dear 王甜甜</span>');
-
     // 添加社交媒体图标
     $('.footer-sns').html(\`
+      <a href="https://github.com/你的用户名" target="_blank" rel="nofollow">
+        <i class="sns-icon fa fa-github"></i>
+      </a>
       <a href="mailto:你的邮箱@example.com">
         <i class="sns-icon fa fa-envelope"></i>
       </a>
@@ -106,12 +60,12 @@ const OPT = { //网站配置
     \`);
 
     // 动态生成版权信息和运行时间
-    var startYear = 2026; // 修改为你的网站创建年份
+    var startYear = 2024; // 修改为你的网站创建年份
     var currentYear = new Date().getFullYear();
     var yearRange = startYear === currentYear ? startYear : startYear + '-' + currentYear;
 
     function showRunTime() {
-      var start = new Date('2026/01/20 00:00:00'); // 修改为你的网站创建日期
+      var start = new Date('2024/01/01 00:00:00'); // 修改为你的网站创建日期
       var now = new Date();
       var diff = now - start;
       var days = Math.floor(diff / (1000 * 60 * 60 * 24));
