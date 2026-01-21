@@ -38,9 +38,6 @@ const OPT = { //网站配置
     /* 主色调 */
     .header { background: #34495e !important; }
     a { color: #42bce9 !important; }
-    :root {
-    --theme-color: #34495e !important;
-    };
     .footer .copyright p {
       line-height: 1.8;
     }
