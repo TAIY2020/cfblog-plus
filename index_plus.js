@@ -33,7 +33,9 @@ const OPT = { //网站配置
   "cacheTime" : 60*60*24*2, //文章在浏览器的缓存时长(秒),建议=文章更新频率
   "html404" : `<b>404</b>`,//404页面代码
   "codeBeforHead":`
-  <script src="https://cdn.staticfile.org/jquery/2.2.4/jquery.min.js"></script>
+  <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico" />
+  <link rel="Shortcut Icon" href="https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
   <style>
     /* 主色调 */
     .header { background: #34495e !important; }
@@ -307,22 +309,13 @@ async function handlerRequest(event){
 
 //访问: favicon.ico
 async function handle_favicon(request){
-  /*
-  想要自定义，或者用指定的ico，可将此请求置为404，并在codeBeforHead中自行添加类似代码：
-    <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/gdtool/zhaopp/cfblog/favicon.ico" />
-    <link rel="Shortcut Icon" href="https://cdn.jsdelivr.net/gh/gdtool/zhaopp/cfblog/favicon.ico">
-  */
-  /*
+  // 返回404，使用 codeBeforHead 中自定义的 favicon
   return new Response("404",{
       headers:{
           "content-type":"text/plain;charset=UTF-8"
       },
       status:404
   });
-  */
-  let url = new URL(request.url)
-  url.host="dash.cloudflare.com"
-  return await fetch(new Request(url, request));
 }
 
 //访问: robots.txt
