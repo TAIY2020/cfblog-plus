@@ -19,10 +19,10 @@ const OPT = { //网站配置
   "siteName" : "CFBLOG-Plus",//博客名称
   "siteDescription":"CFBLOG-Plus" ,//博客描述
   "keyWords":"cloudflare,KV,workers,blog",//关键字
-  "logo":"https://cdn.jsdelivr.net/gh/Arronlong/cfblog-plus@master/themes/JustNews/files/logo2.png",//JustNews主题的logo
+  "logo":"https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/JustNews/files/logo2.png",//JustNews主题的logo
 
-  "theme_github_path":"https://cdn.jsdelivr.net/gh/Arronlong/cfblog-plus@master/themes/",//主题路径
-  "themeURL" : "https://raw.githubusercontent.com/Arronlong/cfblog-plus/master/themes/JustNews/", // 模板地址,以 "/"" 结尾
+  "theme_github_path":"https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/",//主题路径
+  "themeURL" : "https://raw.githubusercontent.com/TAIY2020/cfblog-plus/master/themes/JustNews/", // 模板地址,以 "/"" 结尾
   //"search_xml_url":"", //search.xml外部链接，可通过github的action自动生成，不设置则实时生成
   //"sitemap_xml_url":"", //sitemap.xml外部链接，可通过github的action自动生成，不设置则实时生成
 
@@ -37,8 +37,10 @@ const OPT = { //网站配置
   <style>
     /* 主色调 */
     .header { background: #34495e !important; }
-    a { color: #3498db !important; }
-    a:hover { color: #2980b9 !important; }
+    a { color: #42bce9 !important; }
+    :root {
+    --theme-color: #34495e !important;
+    };
     .footer .copyright p {
       line-height: 1.8;
     }
