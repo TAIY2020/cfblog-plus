@@ -14833,7 +14833,8 @@ body>header.header.header-style-2 .icon-bar {
 	font-size:12px
 }
 }.footer .copyright p {
-	margin:0 0 5px
+	margin:0 0 5px;
+	line-height: 1.8;
 }
 .footer .copyright p:last-child {
 	margin-bottom:0
@@ -15001,7 +15002,7 @@ body>header.header.header-style-2 .icon-bar {
 	--theme-color:#34495e;
 	--theme-hover:#1162e8;
 	--action-color:#206be7;
-	--theme-font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Helvetica Neue,Helvetica,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei UI,Microsoft YaHei,Source Han Sans CN,sans-serif
+	--theme-font-family:"LXGW WenKai Screen",-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Ubuntu,Helvetica Neue,Helvetica,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei UI,Microsoft YaHei,Source Han Sans CN,sans-serif
 }
 .wpcom-icon {
 	display:inline-block
@@ -17100,7 +17101,7 @@ body {
 	text-shadow:3px 5px 2px rgba(0,0,0,.3)
 }
 :root {
-	--theme-hover:#07c
+	--theme-hover:#0077cc
 }
 body>header.header .logo img {
 	max-height:32px
@@ -17136,11 +17137,3 @@ body>header.header .logo img {
 /* 主色调 */
 .header { background: #34495e !important; }
 a { color: #42bce9 !important; }
-.footer .copyright p {
-  line-height: 1.8;
-}
-
-body {
-  font-family: "LXGW WenKai Screen" !important;
-  font-weight: normal !important;
-}
