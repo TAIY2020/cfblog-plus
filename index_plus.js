@@ -36,14 +36,6 @@ const OPT = { //网站配置
   <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico" />
   <link rel="Shortcut Icon" href="https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico">
   <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-  <style>
-    /* 主色调 */
-    .header { background: #34495e !important; }
-    a { color: #42bce9 !important; }
-    .footer .copyright p {
-      line-height: 1.8;
-    }
-  </style>
   `,//其他代码,显示在</head>前
   "codeBeforBody":`
   <script>
