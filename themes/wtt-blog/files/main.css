@@ -17137,3 +17137,7 @@ body>header.header .logo img {
 /* 主色调 */
 .header { background: #34495e !important; }
 a { color: #42bce9 !important; }
+body {
+	font-family: "LXGW WenKai Screen" !important;
+	font-weight: normal !important;
+}
