@@ -11358,7 +11358,7 @@ body>header.header.header-style-2 .icon-bar {
 }
 .entry .entry-content .wp-block-quote,.entry .entry-content blockquote {
 	position:relative;
-	padding:30px 30px 30px 85px;
+	padding:20px 20px 20px 55px;
 	background:#f3f3f3;
 	border-left:0;
 	font-size:16px;
@@ -11366,18 +11366,18 @@ body>header.header.header-style-2 .icon-bar {
 }
 @media(max-width:1239px) {
 	.entry .entry-content .wp-block-quote,.entry .entry-content blockquote {
-	padding:20px 20px 20px 70px
+	padding:15px 15px 15px 50px
 }
 }@media(max-width:767px) {
 	.entry .entry-content .wp-block-quote,.entry .entry-content blockquote {
-	padding:15px 15px 15px 60px
+	padding:12px 12px 12px 45px
 }
 }.entry .entry-content .wp-block-quote:before,.entry .entry-content blockquote:before {
 	position:absolute;
-	width:46px;
-	height:46px;
-	left:20px;
-	top:15px;
+	width:32px;
+	height:32px;
+	left:12px;
+	top:12px;
 	background-image:url(data:image/svg+xml;
 	charset=utf-8;
 	base64,PHN2ZyBjbGFzcz0naWNvbicgdmlld0JveD0nMCAwIDEwMjQgMTAyNCcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB3aWR0aD0nMTgwJyBoZWlnaHQ9JzE4MCc+PHBhdGggZD0nTTE5NS41NDEgNzM5LjAzQzE1MS41OTUgNjkyLjM1MSAxMjggNjQwIDEyOCA1NTUuMTM1YzAtMTQ5LjMzMyAxMDQuODMyLTI4My4xNzkgMjU3LjI4LTM0OS4zNTVsMzguMTAxIDU4Ljc5NWMtMTQyLjI5MyA3Ni45Ny0xNzAuMTEyIDE3Ni44NTMtMTgxLjIwNSAyMzkuODMgMjIuOTEyLTExLjg2MiA1Mi45MDctMTYgODIuMzA0LTEzLjI3IDc2Ljk3IDcuMTI1IDEzNy42NDMgNzAuMzE1IDEzNy42NDMgMTQ4Ljg2NGExNDkuMzMzIDE0OS4zMzMgMCAwMS0xNDkuMzM0IDE0OS4zMzMgMTY1LjE2MyAxNjUuMTYzIDAgMDEtMTE3LjI0OC01MC4zMDR6bTQyNi42NjcgMGMtNDMuOTQ3LTQ2LjY3OC02Ny41NDEtOTkuMDMtNjcuNTQxLTE4My44OTQgMC0xNDkuMzMzIDEwNC44MzItMjgzLjE3OSAyNTcuMjgtMzQ5LjM1NWwzOC4xMDEgNTguNzk1Yy0xNDIuMjkzIDc2Ljk3LTE3MC4xMTIgMTc2Ljg1My0xODEuMjA1IDIzOS44MyAyMi45MTItMTEuODYyIDUyLjkwNi0xNiA4Mi4zMDQtMTMuMjcgNzYuOTcgNy4xMjUgMTM3LjY0MiA3MC4zMTUgMTM3LjY0MiAxNDguODY0YTE0OS4zMzMgMTQ5LjMzMyAwIDAxLTE0OS4zMzMgMTQ5LjMzMyAxNjUuMTYzIDE2NS4xNjMgMCAwMS0xMTcuMjQ4LTUwLjMwNHonLz48L3N2Zz4=);
@@ -11389,14 +11389,14 @@ body>header.header.header-style-2 .icon-bar {
 }
 @media(max-width:1239px) {
 	.entry .entry-content .wp-block-quote:before,.entry .entry-content blockquote:before {
-	width:42px;
-	height:42px;
-	left:15px
+	width:28px;
+	height:28px;
+	left:10px
 }
 }@media(max-width:767px) {
 	.entry .entry-content .wp-block-quote:before,.entry .entry-content blockquote:before {
-	width:36px;
-	height:36px;
+	width:24px;
+	height:24px;
 	left:10px
 }
 }.entry .entry-content .wp-block-code,.entry .entry-content pre {
