@@ -44,11 +44,11 @@ const OPT = { //网站配置
       <a href="https://github.com/你的用户名" target="_blank" rel="nofollow">
         <i class="sns-icon fa fa-github"></i>
       </a>
-      <a href="mailto:你的邮箱@example.com">
+      <a href="mailto:你的邮箱@example.com" target="_blank" rel="nofollow">
         <i class="sns-icon fa fa-envelope"></i>
       </a>
-      <a href="https://weibo.com/你的ID" target="_blank" rel="nofollow">
-        <i class="sns-icon fa fa-weibo"></i>
+      <a href="https://space.bilibili.com/xxxxxxxxx" target="_blank" rel="nofollow">
+        <i class="fa-brands fa-bilibili"></i>
       </a>
     \`);
 
