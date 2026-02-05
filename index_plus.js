@@ -69,7 +69,7 @@ const OPT = { //网站配置
     }
 
     $('.footer .copyright p').html(\`
-      Copyright © \${yearRange} 王甜甜<br>
+      Copyright © \${yearRange} TaiYang<br>
       <span id="runTime">加载中...</span><br>
       Powered by <a href="https://www.cloudflare.com">Cloudflare</a> & <a href="https://blog.arrontg.cf">CFBlog-Plus</a> & <a href="https://blog.gezhong.vip">CF-Blog</a>
     \`);
