@@ -328,8 +328,9 @@ async function handle_sitemap(request) {
     if (OPT.sitemap_xml_url) {
 
         //cf代理方式，速度可以，实时性更好
+        // 这里改为wencache.cn的cdn加速，对国内比较友好
         let url = new URL(request.url)
-        url.href = OPT.sitemap_xml_url.replace('cdn.jsdelivr.net/gh', 'raw.githubusercontent.com').replace('@', '/');
+        url.href = OPT.sitemap_xml_url.replace('code.webcache.cn/gh', 'raw.githubusercontent.com').replace('@', '/');
         xml = await fetch(new Request(url, request));
         xml = await xml.text();
 
@@ -372,8 +373,9 @@ async function handle_search(request) {
     if (OPT.search_xml_url) {
 
         //cf代理方式，速度可以，实时性更好
+        // 这里改为wencache.cn的cdn加速，对国内比较友好
         let url = new URL(request.url)
-        url.href = OPT.search_xml_url.replace('cdn.jsdelivr.net/gh', 'raw.githubusercontent.com').replace('@', '/');
+        url.href = OPT.search_xml_url.replace('code.webcache.cn/gh', 'raw.githubusercontent.com').replace('@', '/');
         xml = await fetch(new Request(url, request));
         xml = await xml.text();
 
