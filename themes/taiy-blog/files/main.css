@@ -31,6 +31,8 @@
     --theme-a: #42bce9;
     --theme-hover: #0077cc;
     --action-color: #206be7;
+    --hljs-bg: rgb(248.37, 248.37, 248.37);
+    --primary-very-high: rgb(67.15, 67.15, 67.15);
     --theme-font-family: "LXGW WenKai Screen", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif
 }
 
@@ -113,6 +115,11 @@ sup {
 img {
     border-style: none;
     vertical-align: middle
+}
+
+.hljs {
+    background: var(--hljs-bg) !important;
+    color: var(--primary-very-high) !important;
 }
 
 body,
@@ -14910,11 +14917,6 @@ body.visual-editor>header.header {
     text-indent: 0
 }
 
-.entry .entry-content blockquote {
-    color: #444;
-    background: #fbfbfb
-}
-
 .entry .entry-content blockquote p:last-child {
     margin-bottom: 0
 }
@@ -15145,7 +15147,7 @@ body.visual-editor>header.header {
 .entry .entry-content .wp-block-quote,
 .entry .entry-content blockquote {
     position: relative;
-    padding: 15px 15px 15px 20px;
+    padding: 15px 1px 1px 1px;
     background: #f3f3f3;
     border-left: 5px solid #33679a;
     font-size: 16px;
@@ -15156,7 +15158,7 @@ body.visual-editor>header.header {
 
     .entry .entry-content .wp-block-quote,
     .entry .entry-content blockquote {
-        padding: 15px 15px 15px 20px;
+    padding: 15px 1px 1px 1px;
     }
 }
 
@@ -15164,7 +15166,7 @@ body.visual-editor>header.header {
 
     .entry .entry-content .wp-block-quote,
     .entry .entry-content blockquote {
-        padding: 10px 10px 10px 15px
+        padding: 20px 1px 1px 1px
     }
 }
 
@@ -15204,15 +15206,15 @@ body.visual-editor>header.header {
 
 .entry .entry-content .wp-block-code,
 .entry .entry-content pre {
-    padding: 30px;
-    background: #2b303b;
+    /* padding: px; */
+    background: var(--hljs-bg);
     border-radius: 3px;
     border: 0;
     color: #eee;
     overflow-x: scroll
 }
 
-@media(max-width:1239px) {
+/* @media(max-width:1239px) {
 
     .entry .entry-content .wp-block-code,
     .entry .entry-content pre {
@@ -15226,7 +15228,7 @@ body.visual-editor>header.header {
     .entry .entry-content pre {
         padding: 15px
     }
-}
+} */
 
 .entry .entry-page p {
     margin: 0
