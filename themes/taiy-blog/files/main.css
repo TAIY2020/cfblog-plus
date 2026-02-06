@@ -13414,6 +13414,7 @@ body>header.header .logo {
 body>header.header .logo img {
     width: auto;
     max-height: 32px;
+    border-radius: 50%;
     vertical-align: top
 }
 

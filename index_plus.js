@@ -33,59 +33,59 @@ const OPT = { //网站配置
     "cacheTime": 60 * 60 * 24 * 2, //文章在浏览器的缓存时长(秒),建议=文章更新频率
     "html404": `<b>404</b>`,//404页面代码
     "codeBeforHead": `
-  <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico" />
-  <link rel="Shortcut Icon" href="https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico">
-  <script src="https://npm.webcache.cn/jquery@3.7.1/dist/jquery.min.js"></script>
-  `,//其他代码,显示在</head>前
+    <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico" />
+    <link rel="Shortcut Icon" href="https://cdn.jsdelivr.net/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico">
+    <script src="https://npm.webcache.cn/jquery@3.7.1/dist/jquery.min.js"></script>
+    `,//其他代码,显示在</head>前
     "codeBeforBody": `
-  <script>
-    // 添加社交媒体图标
-    $('.footer-sns').html(\`
-      <a href="https://github.com/你的用户名" target="_blank" rel="nofollow">
-        <i class="sns-icon fa fa-github"></i>
-      </a>
-      <a href="mailto:你的邮箱@example.com" target="_blank" rel="nofollow">
-        <i class="sns-icon fa fa-envelope"></i>
-      </a>
-      <a href="https://space.bilibili.com/xxxxxxxxx" target="_blank" rel="nofollow">
-        <i class="fa-brands fa-bilibili"></i>
-      </a>
-    \`);
+    <script>
+        // 添加社交媒体图标
+        $('.footer-sns').html(\`
+            <a href="https://github.com/你的用户名" target="_blank" rel="nofollow">
+                <i class="sns-icon fa fa-github"></i>
+            </a>
+            <a href="mailto:你的邮箱@example.com" target="_blank" rel="nofollow">
+                <i class="sns-icon fa fa-envelope"></i>
+            </a>
+            <a href="https://space.bilibili.com/xxxxxxxxx" target="_blank" rel="nofollow">
+                <i class="fa-brands fa-bilibili"></i>
+            </a>
+        \`);
 
-    // 动态生成版权信息和运行时间
-    var startYear = 2024; // 修改为你的网站创建年份
-    var currentYear = new Date().getFullYear();
-    var yearRange = startYear === currentYear ? startYear : startYear + '-' + currentYear;
+        // 动态生成版权信息和运行时间
+        var startYear = 2024; // 修改为你的网站创建年份
+        var currentYear = new Date().getFullYear();
+        var yearRange = startYear === currentYear ? startYear : startYear + '-' + currentYear;
 
-    function showRunTime() {
-      var start = new Date('2024/01/01 00:00:00'); // 修改为你的网站创建日期
-      var now = new Date();
-      var diff = now - start;
-      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      $('#runTime').html('本站已运行 ' + days + ' 天 ' + hours + ' 小时 ' + minutes + ' 分 ' + seconds + ' 秒');
-    }
+        function showRunTime() {
+            var start = new Date('2024/01/01 00:00:00'); // 修改为你的网站创建日期
+            var now = new Date();
+            var diff = now - start;
+            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            $('#runTime').html('本站已运行 ' + days + ' 天 ' + hours + ' 小时 ' + minutes + ' 分 ' + seconds + ' 秒');
+        }
 
-    $('.footer .copyright p').html(\`
-      Copyright © \${yearRange} TaiYang<br>
-      <span id="runTime">加载中...</span><br>
-      Powered by <a href="https://www.cloudflare.com">Cloudflare</a> & <a href="https://blog.arrontg.cf">CFBlog-Plus</a> & <a href="https://blog.gezhong.vip">CF-Blog</a>
-    \`);
+        $('.footer .copyright p').html(\`
+            Copyright © \${yearRange} TaiYang<br>
+            <span id="runTime">加载中...</span><br>
+            Powered by <a href="https://www.cloudflare.com">Cloudflare</a> & <a href="https://blog.arrontg.cf">CFBlog-Plus</a> & <a href="https://blog.gezhong.vip">CF-Blog</a>
+        \`);
 
-    showRunTime();
-    setInterval(showRunTime, 1000);
-  </script>
-  `,//其他代码,显示在</body>前
+        showRunTime();
+        setInterval(showRunTime, 1000);
+    </script>
+    `,//其他代码,显示在</body>前
     "commentCode": `
-  <script>
-    //文章浏览页 添加编辑直达功能
-    $(".entry-info").append('<a style="float:right;margin-left:5px;" href="'+location.href.replace('/article/','/admin/edit/')+'" target="_blank">编辑</a>')
-  </script>
-  `,//评论区代码
+    <script>
+        //文章浏览页 添加编辑直达功能
+        $(".entry-info").append('<a style="float:right;margin-left:5px;" href="'+location.href.replace('/article/','/admin/edit/')+'" target="_blank">编辑</a>')
+    </script>
+    `,//评论区代码
     "widgetOther": `
-  `,//20201224新增参数,用于右侧 小部件扩展
+    `,//20201224新增参数,用于右侧 小部件扩展
     "otherCodeA": `热度`,//模板开发用的其他自定义变量
     "otherCodeB": ``,//
     "otherCodeC": ``,//
@@ -93,7 +93,7 @@ const OPT = { //网站配置
     "otherCodeE": ``,//
     "copyRight": ``,//自定义版权信息,建议保留大公无私的 Coudflare 和 作者 的链接
     "robots": `User-agent: *
-Disallow: /admin`,//robots.txt设置
+    Disallow: /admin`,//robots.txt设置
 
     /*--前后台共用参数--*/
 
@@ -110,35 +110,35 @@ Disallow: /admin`,//robots.txt设置
     "editor_page_scripts": `
     //置顶设置
     let top_setting=\`
-      <div class="form-group">
-      <label for="exampleInputEmail2">是否置顶</label>
-      <input type="hidden" class="form-control" id="top_timestamp" name="top_timestamp">
-      <select class="form-control" id="istop" name="istop">
-        <option value="0" selected >否</option>
-        <option value="1" >是</option>
-      </select>
-      </div>\`
+        <div class="form-group">
+        <label for="exampleInputEmail2">是否置顶</label>
+        <input type="hidden" class="form-control" id="top_timestamp" name="top_timestamp">
+        <select class="form-control" id="istop" name="istop">
+            <option value="0" selected >否</option>
+            <option value="1" >是</option>
+        </select>
+    </div>\`
     $('form#addNewForm div.form-group,form#editForm div.form-group').last().after(top_setting);//新建和编辑页面添加置顶设置
     $("#istop").change(function(){
-      $("#top_timestamp").val($(this).val()*1?new Date().getTime():0);
+        $("#top_timestamp").val($(this).val()*1?new Date().getTime():0);
     });
     if(location.pathname.startsWith('/admin/edit')){//修改文章页面，自动设置置顶
-      $("#istop").val(articleJson.top_timestamp?1:0);
-      $("#top_timestamp").val(articleJson.top_timestamp?articleJson.top_timestamp:0);
+        $("#istop").val(articleJson.top_timestamp?1:0);
+        $("#top_timestamp").val(articleJson.top_timestamp?articleJson.top_timestamp:0);
     }
     $("#istop").trigger('change')
     //隐藏设置
     let hidden_setting=\`
-      <div class="form-group">
-      <label for="exampleInputEmail2">是否隐藏</label>
-      <select class="form-control" id="hidden" name="hidden">
-        <option value="0" selected >否</option>
-        <option value="1" >是</option>
-      </select>
-      </div>\`
+        <div class="form-group">
+        <label for="exampleInputEmail2">是否隐藏</label>
+        <select class="form-control" id="hidden" name="hidden">
+            <option value="0" selected >否</option>
+            <option value="1" >是</option>
+        </select>
+    </div>\`
     $('form#addNewForm div.form-group,form#editForm div.form-group').last().after(hidden_setting);//新建和编辑页面添加隐藏设置
     if(location.pathname.startsWith('/admin/edit')){//修改文章页面，自动设置隐藏
-      $("#hidden").val(articleJson.hidden?1:0);
+        $("#hidden").val(articleJson.hidden?1:0);
     }
     let sitemapxml=\`<a  tabindex="0"  role="button"  type="submit" id="btn_export" class="btn btn-default"  href="/admin/sitemap.xml" >导出sitemap.xml</a>\`
     $('form#importForm a').last().after(sitemapxml);//设置页面添加导出sitemap.xml导出按钮
@@ -149,12 +149,12 @@ Disallow: /admin`,//robots.txt设置
     mdEditor.settings.emailLink=false;
     mdEditor.settings.atLink=false;
 
-    //mdEditor.settings.toc=false
-    //mdEditor.settings.tocm=true  // Using [TOCM]
-    //mdEditor.settings.tocContainer="#custom-toc-container" // 自定义 ToC 容器层
-    //mdEditor.settings.gfm=false
-    //mdEditor.settings.tocDropdown=true
-    //mdEditor.settings.markdownSourceCode=true // 是否保留 Markdown 源码，即是否删除保存源码的 Textarea 标签
+    mdEditor.settings.toc=false
+    mdEditor.settings.tocm=true  // Using [TOCM]
+    mdEditor.settings.tocContainer="#custom-toc-container" // 自定义 ToC 容器层
+    mdEditor.settings.gfm=false
+    mdEditor.settings.tocDropdown=true
+    mdEditor.settings.markdownSourceCode=true // 是否保留 Markdown 源码，即是否删除保存源码的 Textarea 标签
     mdEditor.settings.emoji=true
     mdEditor.settings.taskList=true;// 默认不解析
     mdEditor.settings.tex=true;// 默认不解析
@@ -167,19 +167,19 @@ Disallow: /admin`,//robots.txt设置
     window.mdEditor=mdEditor;
     //editormd工具栏上添加html标签解析开关
     mdEditor.getToolbarHandles().parseHtml=function(){
-      let ele = $(".editormd-menu li a i:last");
-      if(ele.hasClass('fa-toggle-off')){
+    let ele = $(".editormd-menu li a i:last");
+    if(ele.hasClass('fa-toggle-off')){
         ele.removeClass('fa-toggle-off').addClass('fa-toggle-on');
         mdEditor.settings.htmlDecode = true;
-      }else if(ele.hasClass('fa-toggle-on')){
+    }else if(ele.hasClass('fa-toggle-on')){
         ele.removeClass('fa-toggle-on').addClass('fa-toggle-off')
         mdEditor.settings.htmlDecode = false;
-      }
-      mdEditor.setMarkdown(mdEditor.getMarkdown());
+    }
+    mdEditor.setMarkdown(mdEditor.getMarkdown());
     }
     setTimeout(function(){
-      $(".editormd-menu").append('<li class="divider" unselectable="on">|</li><li><a href="javascript:;" title="解析HTML标签" unselectable="on"><i class="fa fa-toggle-off" name="parseHtml" unselectable="on"> 解析HTML标签 </i></a></li>')
-      mdEditor.setToolbarHandler(mdEditor.getToolbarHandles())
+        $(".editormd-menu").append('<li class="divider" unselectable="on">|</li><li><a href="javascript:;" title="解析HTML标签" unselectable="on"><i class="fa fa-toggle-off" name="parseHtml" unselectable="on"> 解析HTML标签 </i></a></li>')
+        mdEditor.setToolbarHandler(mdEditor.getToolbarHandles())
     },300)
 
     //默认图片，工具：https://tool.lu/imageholder/
