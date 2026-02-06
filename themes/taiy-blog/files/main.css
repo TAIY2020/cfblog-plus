@@ -29,7 +29,7 @@
 :root {
     --theme-color: #34495e;
     --theme-a: #42bce9;
-    --theme-hover: #1162e8;
+    --theme-hover: #0077cc;
     --action-color: #206be7;
     --theme-font-family: "LXGW WenKai Screen", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif
 }
@@ -13365,7 +13365,8 @@ body>header.header {
     z-index: 999;
     width: 100%;
     border: 0;
-    background: #fff;
+    background: var(--theme-color);
+    color: rgba(255, 255, 255, .7);
     -webkit-box-shadow: 0 0 3px 1px rgba(0, 0, 0, .1);
     box-shadow: 0 0 3px 1px rgba(0, 0, 0, .1)
 }
@@ -13441,7 +13442,7 @@ body>header.header .nav>li.active>a {
 
 body>header.header .nav>li>a {
     padding: 0 14px;
-    color: #333;
+    color: rgba(255, 255, 255, .7);
     line-height: 64px;
     background: 0 0
 }
@@ -14017,7 +14018,7 @@ body.visual-editor>header.header {
 .navbar-action .login {
     display: none;
     font-size: 14px;
-    color: #606266;
+    color: rgba(255, 255, 255, .7);
     line-height: 26px
 }
 
@@ -19636,7 +19637,7 @@ body.visual-editor>header.header {
 }
 
 .footer a:hover {
-    color: rgba(255, 255, 255, .9);
+    color: var(--theme-hover);
     text-decoration: none
 }
 
@@ -22879,20 +22880,6 @@ ul.wpuf-form li .wpuf-fields a.file-selector {
     text-shadow: 3px 5px 2px rgba(0, 0, 0, .3)
 }
 
-:root {
-    --theme-hover: #0077cc
-}
-
-body>header.header .logo img {
-    max-height: 32px
-}
-
-@media(max-width:767px) {
-    body>header.header .logo img {
-        max-height: 26px
-    }
-}
-
 .entry .entry-video {
     height: 482px
 }
@@ -23079,9 +23066,4 @@ pre:hover .copy-button {
     display: inline !important;
     padding: 0 !important;
     margin: 0 !important;
-}
-
-/* 主色调 */
-.header {
-    background: #34495e !important;
 }
