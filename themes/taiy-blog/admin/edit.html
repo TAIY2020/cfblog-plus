@@ -113,9 +113,9 @@
         $(function () {
             $('#myTab li:eq(0) a').tab('show');
             //获取文章
-            var articleJson = (function () { try { return JSON.parse('<!--{articleJson}-->'); } catch (e) { return {}; } })();
+            var articleJson = <!--{articleJson}-->;
             //获取分类
-            var categoryJson = (function () { try { return JSON.parse('<!--{categoryJson}-->'); } catch (e) { return []; } })();
+            var categoryJson = <!--{categoryJson}-->;
 
 
             var mdEditor = editormd("content", {
