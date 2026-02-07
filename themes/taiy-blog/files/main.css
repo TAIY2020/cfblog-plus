@@ -31,7 +31,8 @@
     --theme-a: #42bce9;
     --theme-hover: #0077cc;
     --action-color: #206be7;
-    --hljs-bg: rgb(248.37, 248.37, 248.37);
+    --hljs-bg: #f6f8fa;
+    --bgColor-code: rgba(129, 139, 152, .12);
     --primary-very-high: rgb(67.15, 67.15, 67.15);
     --theme-font-family: "LXGW WenKai Screen", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif
 }
@@ -72,12 +73,24 @@ hr {
     border-top: 1px solid #eee
 }
 
+pre {
+    position: relative;
+}
+
+pre:hover .copy-button {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
 code,
 kbd,
-pre,
 samp {
     font-family: SFMono-Regular, Liberation Mono, Consolas, Menlo, monospace, Microsoft Yahei;
-    font-size: 1em
+    /* white-space: break-spaces; */
+    border-radius: 6px;
+    background-color: var(--bgColor-code);
+    margin: 0;
+    padding: .2em .4em;
+    font-size: 95%;
 }
 
 a {
@@ -117,9 +130,14 @@ img {
     vertical-align: middle
 }
 
-.hljs {
+.hljs,
+.lang-vbs{
     background: var(--hljs-bg) !important;
     color: var(--primary-very-high) !important;
+    display: block;
+    overflow-x: auto;
+    line-height: 1.45 !important;
+    padding: 1rem !important;
 }
 
 body,
@@ -22964,14 +22982,6 @@ code.kb-btn {
     background-repeat: no-repeat;
     position: relative;
     top: 3px;
-}
-
-pre {
-    position: relative;
-}
-
-pre:hover .copy-button {
-    background-color: rgba(255, 255, 255, 0.9);
 }
 
 .md-widget-toc {
