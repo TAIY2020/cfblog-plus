@@ -1,7 +1,7 @@
-/*!* Bootstrap v3.3.7 (http://getbootstrap.com)
+/*! Bootstrap v3.3.7 (http://getbootstrap.com)
 * Copyright 2011-2016 Twitter,Inc.
 * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)*/
-/*!normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css*/
+/*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css*/
 @-webkit-keyframes rotating {
     0% {
         -webkit-transform: rotate(0deg);
@@ -26,9 +26,20 @@
     }
 }
 
+:root {
+    --theme-color: #34495e;
+    --theme-a: #42bce9;
+    --theme-hover: #0077cc;
+    --action-color: #206be7;
+    --hljs-bg: #f6f8fa;
+    --bgColor-code: rgba(129, 139, 152, .12);
+    --primary-very-high: rgb(67.15, 67.15, 67.15);
+    --theme-font-family: "LXGW WenKai Screen", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif
+}
+
 html {
     -webkit-text-size-adjust: 100%;
-    font-size: 10px;
+    font-size: 12px;
     -webkit-tap-highlight-color: transparent
 }
 
@@ -62,17 +73,29 @@ hr {
     border-top: 1px solid #eee
 }
 
+pre {
+    position: relative;
+}
+
+pre:hover .copy-button {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
 code,
 kbd,
-pre,
 samp {
     font-family: SFMono-Regular, Liberation Mono, Consolas, Menlo, monospace, Microsoft Yahei;
-    font-size: 1em
+    /* white-space: break-spaces; */
+    border-radius: 6px;
+    background-color: var(--bgColor-code);
+    margin: 0;
+    padding: .2em .4em;
+    font-size: 95%;
 }
 
 a {
     background-color: transparent;
-    color: var(--theme-color);
+    color: var(--theme-a);
     text-decoration: none
 }
 
@@ -105,6 +128,16 @@ sup {
 img {
     border-style: none;
     vertical-align: middle
+}
+
+.hljs,
+.lang-vbs{
+    background: var(--hljs-bg) !important;
+    color: var(--primary-very-high) !important;
+    display: block;
+    overflow-x: auto;
+    line-height: 1.45 !important;
+    padding: 1rem !important;
 }
 
 body,
@@ -192,6 +225,7 @@ textarea {
 
 [type=search] {
     -webkit-appearance: textfield;
+    appearance: textfield;
     outline-offset: -2px
 }
 
@@ -201,6 +235,7 @@ textarea {
 
 ::-webkit-file-upload-button {
     -webkit-appearance: button;
+    appearance: button;
     font: inherit
 }
 
@@ -1927,7 +1962,7 @@ input[type=search] {
 .radio-inline input[type=radio] {
     position: absolute;
     margin-left: -20px;
-    margin-top: 4px\9
+    margin-top: 4px\9;
 }
 
 .checkbox+.checkbox,
@@ -4522,6 +4557,7 @@ button.close {
     background: 0 0;
     border: 0;
     -webkit-appearance: none;
+    appearance: none;
     outline: 0
 }
 
@@ -5667,7 +5703,7 @@ input[type=radio] {
     text-indent: 0 !important
 }
 
-/*!* Swiper 3.3.1
+/*! Swiper 3.3.1
 * Most modern mobile touch slider and framework with hardware accelerated transitions
 *
 * http://www.idangero.us/swiper/
@@ -6163,6 +6199,7 @@ button.swiper-pagination-bullet {
 
 .swiper-container-3d {
     -webkit-perspective: 1200px;
+    perspective: 1200px;
     -o-perspective: 1200px;
     perspective: 1200px
 }
@@ -6349,6 +6386,7 @@ button.swiper-pagination-bullet {
     border-radius: 10px;
     position: relative;
     -ms-touch-action: none;
+    touch-action: none;
     background: rgba(0, 0, 0, .1)
 }
 
@@ -9191,6 +9229,7 @@ body>header.header .nav>li:first-child {
 @media(max-width:1239px) and (min-width:768px) {
     .wpcom-profile-main .profile-posts-list .item-title a {
         -webkit-line-clamp: 1;
+        line-clamp: 1;
         max-height: 28px
     }
 }
@@ -12063,6 +12102,7 @@ body>header.header .nav>li.dropdown>a {
 
 .plyr--full-ui input[type=range] {
     -webkit-appearance: none;
+    appearance: none;
     background: 0 0;
     border: 0;
     border-radius: 26px;
@@ -12103,6 +12143,7 @@ body>header.header .nav>li.dropdown>a {
     transition: all .2s ease;
     width: 13px;
     -webkit-appearance: none;
+    appearance: none;
     margin-top: -4px
 }
 
@@ -12469,6 +12510,7 @@ body>header.header .nav>li.dropdown>a {
 
 .plyr__progress__buffer {
     -webkit-appearance: none;
+    appearance: none;
     background: 0 0;
     border: 0;
     border-radius: 100px;
@@ -13348,7 +13390,8 @@ body>header.header {
     z-index: 999;
     width: 100%;
     border: 0;
-    background: #fff;
+    background: var(--theme-color);
+    color: rgba(255, 255, 255, .7);
     -webkit-box-shadow: 0 0 3px 1px rgba(0, 0, 0, .1);
     box-shadow: 0 0 3px 1px rgba(0, 0, 0, .1)
 }
@@ -13389,6 +13432,7 @@ body>header.header .logo {
 body>header.header .logo img {
     width: auto;
     max-height: 32px;
+    border-radius: 50%;
     vertical-align: top
 }
 
@@ -13424,7 +13468,7 @@ body>header.header .nav>li.active>a {
 
 body>header.header .nav>li>a {
     padding: 0 14px;
-    color: #333;
+    color: rgba(255, 255, 255, .7);
     line-height: 64px;
     background: 0 0
 }
@@ -14000,7 +14044,7 @@ body.visual-editor>header.header {
 .navbar-action .login {
     display: none;
     font-size: 14px;
-    color: #606266;
+    color: rgba(255, 255, 255, .7);
     line-height: 26px
 }
 
@@ -14892,11 +14936,6 @@ body.visual-editor>header.header {
     text-indent: 0
 }
 
-.entry .entry-content blockquote {
-    color: #444;
-    background: #fbfbfb
-}
-
 .entry .entry-content blockquote p:last-child {
     margin-bottom: 0
 }
@@ -15127,7 +15166,7 @@ body.visual-editor>header.header {
 .entry .entry-content .wp-block-quote,
 .entry .entry-content blockquote {
     position: relative;
-    padding: 15px 15px 15px 20px;
+    padding: 15px 1px 1px 1px;
     background: #f3f3f3;
     border-left: 5px solid #33679a;
     font-size: 16px;
@@ -15138,7 +15177,7 @@ body.visual-editor>header.header {
 
     .entry .entry-content .wp-block-quote,
     .entry .entry-content blockquote {
-        padding: 15px 15px 15px 20px;
+    padding: 15px 1px 1px 1px;
     }
 }
 
@@ -15146,7 +15185,7 @@ body.visual-editor>header.header {
 
     .entry .entry-content .wp-block-quote,
     .entry .entry-content blockquote {
-        padding: 10px 10px 10px 15px
+        padding: 20px 1px 1px 1px
     }
 }
 
@@ -15186,15 +15225,15 @@ body.visual-editor>header.header {
 
 .entry .entry-content .wp-block-code,
 .entry .entry-content pre {
-    padding: 30px;
-    background: #2b303b;
+    /* padding: px; */
+    background: var(--hljs-bg);
     border-radius: 3px;
     border: 0;
     color: #eee;
     overflow-x: scroll
 }
 
-@media(max-width:1239px) {
+/* @media(max-width:1239px) {
 
     .entry .entry-content .wp-block-code,
     .entry .entry-content pre {
@@ -15208,7 +15247,7 @@ body.visual-editor>header.header {
     .entry .entry-content pre {
         padding: 15px
     }
-}
+} */
 
 .entry .entry-page p {
     margin: 0
@@ -16092,7 +16131,6 @@ body.visual-editor>header.header {
 @media(max-width:991px) {
     .wpcom-shortcode-tags li {
         float: none;
-        display: inline-block;
         width: 24%;
         margin: .5% !important
     }
@@ -16101,7 +16139,6 @@ body.visual-editor>header.header {
 @media(max-width:767px) {
     .wpcom-shortcode-tags li {
         float: none;
-        display: inline-block;
         width: 48%;
         margin: 1% !important
     }
@@ -16894,7 +16931,6 @@ body.visual-editor>header.header {
 
 @media(max-width:767px) {
     .logged-in .form-submit .submit {
-        display: inline-block;
         width: auto;
         float: right
     }
@@ -17004,7 +17040,6 @@ body.visual-editor>header.header {
     display: block;
     font-size: 16px;
     padding-right: 110px;
-    vertical-align: top;
     color: #333
 }
 
@@ -17438,6 +17473,7 @@ body.visual-editor>header.header {
 @media(max-width:1239px) and (min-width:768px) {
     .post-loop-default .item-title a {
         -webkit-line-clamp: 1;
+        line-clamp: 1;
         max-height: 28px
     }
 }
@@ -17969,6 +18005,7 @@ body.visual-editor>header.header {
     display: block;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     text-decoration: none
 }
 
@@ -18413,7 +18450,6 @@ body.visual-editor>header.header {
 .special-item-wrap {
     vertical-align: top;
     float: none;
-    display: inline-block;
     padding: 0 10px !important;
     font-size: 14px
 }
@@ -18872,6 +18908,7 @@ body.visual-editor>header.header {
     display: block;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     line-height: 18px
 }
 
@@ -19412,6 +19449,7 @@ body.visual-editor>header.header {
     display: block;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     line-height: 1.4
 }
 
@@ -19458,7 +19496,6 @@ body.visual-editor>header.header {
 }
 
 .widget_comments .comment-info .comment-author {
-    display: inline-block;
     float: none;
     width: auto;
     max-width: 120px;
@@ -19621,7 +19658,7 @@ body.visual-editor>header.header {
 }
 
 .footer a:hover {
-    color: rgba(255, 255, 255, .9);
+    color: var(--theme-hover);
     text-decoration: none
 }
 
@@ -19843,13 +19880,6 @@ body.visual-editor>header.header {
     filter: alpha(opacity=100)
 }
 
-:root {
-    --theme-color: #34495e;
-    --theme-hover: #1162e8;
-    --action-color: #206be7;
-    --theme-font-family: "LXGW WenKai Screen", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif
-}
-
 .wpcom-icon {
     display: inline-block
 }
@@ -19861,10 +19891,6 @@ body.visual-editor>header.header {
     vertical-align: -.15em;
     fill: currentColor;
     overflow: hidden
-}
-
-html {
-    font-size: 12px
 }
 
 body {
@@ -20653,6 +20679,7 @@ body {
     -webkit-box-orient: vertical;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden
 }
 
@@ -21025,7 +21052,6 @@ body {
     width: 100%;
     height: auto;
     border: 1px solid #efefef;
-    vertical-align: top;
     border-radius: 2px
 }
 
@@ -22875,20 +22901,6 @@ ul.wpuf-form li .wpuf-fields a.file-selector {
     text-shadow: 3px 5px 2px rgba(0, 0, 0, .3)
 }
 
-:root {
-    --theme-hover: #0077cc
-}
-
-body>header.header .logo img {
-    max-height: 32px
-}
-
-@media(max-width:767px) {
-    body>header.header .logo img {
-        max-height: 26px
-    }
-}
-
 .entry .entry-video {
     height: 482px
 }
@@ -22970,14 +22982,6 @@ code.kb-btn {
     background-repeat: no-repeat;
     position: relative;
     top: 3px;
-}
-
-pre {
-    position: relative;
-}
-
-pre:hover .copy-button {
-    background-color: rgba(255, 255, 255, 0.9);
 }
 
 .md-widget-toc {
@@ -23075,13 +23079,4 @@ pre:hover .copy-button {
     display: inline !important;
     padding: 0 !important;
     margin: 0 !important;
-}
-
-/* 主色调 */
-.header {
-    background: #34495e !important;
-}
-
-a {
-    color: #42bce9 !important;
 }
