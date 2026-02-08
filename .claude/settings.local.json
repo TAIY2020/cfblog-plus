@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:cdnjs.webstatic.cn)",
+      "WebFetch(domain:cdn.jsdelivr.net)",
+      "WebFetch(domain:npm.webcache.cn)",
+      "WebFetch(domain:over.alnk.cn)",
+      "Bash(head:*)",
+      "WebSearch",
+      "WebFetch(domain:www.cnblogs.com)"
     ]
   }
 }

@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+<script>
+    (function(){
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || t === 'light') {
+            document.documentElement.setAttribute('data-theme', t);
+        }
+    })();
+</script>
 
 <head>
     <meta charset="UTF-8">
@@ -14,7 +22,7 @@
     <link rel='stylesheet' id='stylesheet-css' href='{{ &OPT.theme_github_path }}taiy-blog/files/main.css'
         type='text/css' media='all' />
     <link rel='stylesheet' id='font-awesome-css'
-        href='{{ &OPT.theme_github_path }}taiy-blog/files/font-awesome.css?ver=6.1.2' type='text/css' media='all' />
+        href='https://npm.webcache.cn/@fortawesome/fontawesome-free@6.1.2/css/all.min.css' type='text/css' media='all' />
     <link rel='stylesheet' id='wp-block-library-css'
         href='https://code.webcache.cn/gh/WordPress/WordPress@5.5.3/wp-includes/css/dist/block-library/style.min.css?ver=5.6'
         type='text/css' media='all' />
@@ -34,7 +42,7 @@
         href='https://code.webcache.cn/gh/WordPress/WordPress@5.5.3/wp-includes/css/dist/editor/style.min.css?ver=5.6'
         type='text/css' media='all' />
     <link rel='stylesheet' id='mux_video_block_style-css'
-        href='https://cdn.jsdelivr.net/gh/newexsexy/wp@master/wp-content/plugins/ilab-media-tools/public/blocks/mediacloud-mux.blocks.style.min.css'
+        href='https://cdn.jsdmirror.com/gh/newexsexy/wp@master/wp-content/plugins/ilab-media-tools/public/blocks/mediacloud-mux.blocks.style.min.css'
         type='text/css' media='all' />
 
     <!-- <link rel='stylesheet' id='emojify-css' href='https://cdn.jsdelivr.net/npm/emojify.js@1.1.0/dist/css/basic/emojify.min.css?ver=1.1.0' type='text/css' media='all' /> -->
@@ -48,7 +56,7 @@
     <script type='text/javascript'
         src='https://npm.webcache.cn/jquery-migrate@3.4.1/dist/jquery-migrate.min.js?ver=3.4.1'
         id='jquery-migrate-js'></script>
-    <script type='text/javascript' src='https://cdn.jsdelivr.net/gh/wpcom-cn/assets/fonts/icons-2.6.4.js?ver=6.1.2'
+    <script type='text/javascript' src='https://cdn.jsdmirror.com/gh/wpcom-cn/assets/fonts/icons-2.6.4.js?ver=6.1.2'
         id='wpcom-icons-js'></script>
     <link rel="stylesheet"
         href="https://cdnjs.webstatic.cn/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/lxgwwenkaigbscreen.css" />
@@ -246,6 +254,10 @@
         </div>
     </footer>
     <div class="action action-style-0 action-color-0 action-pos-0" style="bottom:20%;">
+        <div class="action-item theme-toggle" onclick="toggleTheme()" title="切换深色/浅色模式">
+            <i class="fa fa-moon"></i>
+            <i class="fa fa-sun"></i>
+        </div>
         <div class="action-item gotop j-top">
             <i class="wpcom-icon wi action-item-icon">
                 <svg aria-hidden="true">
@@ -379,6 +391,33 @@
                 }
             });
         })(jQuery);</script>
+    <script id="theme-toggle-js">
+        function toggleTheme() {
+            var html = document.documentElement;
+            var current = html.getAttribute('data-theme');
+            var isDark;
+            if (current === 'dark') {
+                isDark = false;
+            } else if (current === 'light') {
+                isDark = true;
+            } else {
+                isDark = !window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+            var next = isDark ? 'dark' : 'light';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+        }
+        (function(){
+            var saved = localStorage.getItem('theme');
+            if (!saved) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                    if (!localStorage.getItem('theme')) {
+                        document.documentElement.removeAttribute('data-theme');
+                    }
+                });
+            }
+        })();
+    </script>
     {{ &OPT.codeBeforBody }}
 </body>
 
