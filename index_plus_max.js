@@ -900,14 +900,20 @@ async function handle_admin(request) {
         if (6 == id.length) {
             await CFBLOG.delete(id);
             let e = await getAllArticlesList();
-            for (r = 0; r < e.length; r++) {
+            let deleted = false;
+            for (let r = 0; r < e.length; r++) {
                 if (id == e[r].id) {
                     e.splice(r, 1);
-
                     await saveArticlesList(JSON.stringify(e))
-                    json = '{"msg":"Delete (' + id + ')  OK","rst":true,"id":"' + id + '"}'
+                    deleted = true;
                     break;
                 }
+            }
+            if (deleted) {
+                await purge();//删除后清除CDN缓存，使前台页面立即生效
+                json = '{"msg":"Delete (' + id + ')  OK","rst":true,"id":"' + id + '"}'
+            } else {
+                json = '{"msg":"Delete (' + id + ') 内容已删除，但文章列表中未找到该条目","rst":true,"id":"' + id + '"}'
             }
         } else {
             json = '{"msg":"Delete  false ","rst":false,"id":"' + id + '"}'

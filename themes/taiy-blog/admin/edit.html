@@ -161,7 +161,7 @@
         }
         //删除
         function deleteArticle() {
-            if (confirm("确定删除吗?删除后重新发布才能生效") == false) {
+            if (confirm("确定删除吗?") == false) {
                 return false;
             }
             $.ajax({
@@ -172,6 +172,9 @@
                 data: [{ "id": $('#id').val() }],
                 success: function (result) {
                     alert(result.msg);
+                    if(result.rst){
+                        window.location.href = "/admin/#list";
+                    }
                 }
             });
         }
