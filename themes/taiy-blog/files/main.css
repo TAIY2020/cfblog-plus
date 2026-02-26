@@ -14880,15 +14880,6 @@ body.visual-editor>header.header {
 }
 
 @media(max-width:767px) {
-  .entry .entry-content p {
-    text-align: justify
-  }
-
-  /* 移动端行内代码不受 justify 拉伸字间距 */
-  .entry .entry-content p code {
-    display: inline-block;
-    text-align: left
-  }
 
   /* 移动端代码块不超出内容区域 */
   .entry .entry-content pre {
@@ -23524,5 +23515,61 @@ article.post,
   .main {
     margin-left: 8px;
     margin-right: 8px;
+  }
+}
+
+/* ============================================
+   移动端文章内容间距优化
+   ============================================ */
+@media(max-width:767px) {
+
+  /* 减少标题区与正文之间的间距 */
+  .entry .entry-head {
+    margin-bottom: 10px;
+  }
+
+  /* 减少移动端标题上下间距，统一节奏 */
+  .entry .entry-content h1,
+  .entry .entry-content h2,
+  .entry .entry-content h3 {
+    margin: 20px 0 12px;
+  }
+
+  .entry .entry-content h4,
+  .entry .entry-content h5 {
+    margin: 16px 0 10px;
+  }
+
+  /* 正文第一个子元素不需要顶部间距 */
+  .entry .entry-content> :first-child {
+    margin-top: 0;
+  }
+
+  /* 减少移动端段落下间距 */
+  .entry .entry-content p {
+    margin-bottom: 14px;
+  }
+
+  /* h2 底部 padding 缩小 */
+  .entry .entry-content h2 {
+    padding-bottom: 8px;
+  }
+
+  /* 列表整体上下间距 */
+  .entry .entry-content ol,
+  .entry .entry-content ul {
+    margin-top: 8px;
+    margin-bottom: 14px;
+  }
+
+  /* 列表项间距统一 */
+  .entry .entry-content li {
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+
+  /* 列表内段落减少间距 */
+  .entry .entry-content li p {
+    margin-bottom: 8px;
   }
 }
