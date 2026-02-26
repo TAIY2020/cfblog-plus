@@ -887,7 +887,7 @@ async function handle_admin(request) {
                 articles_all = articles_all.concat(articles_all_old),
                 articles_all = sortArticle(articles_all),
                 await saveArticlesList(JSON.stringify(articles_all))
-
+            await purge();//新建后清除CDN缓存，使前台页面立即生效
             json = '{"msg":"added OK","rst":true,"id":"' + id + '"}'
         } else {
             json = '{"msg":"信息不全","rst":false}'
@@ -997,6 +997,7 @@ async function handle_admin(request) {
             articles_all.push(articleWithoutHtml),
                 articles_all = sortArticle(articles_all),
                 await saveArticlesList(JSON.stringify(articles_all))
+            await purge();//编辑后清除CDN缓存，使前台页面立即生效
             json = '{"msg":"Edit OK","rst":true,"id":"' + id + '"}'
         } else {
             json = '{"msg":"信息不全","rst":false}'
