@@ -14701,7 +14701,7 @@ body.visual-editor>header.header {
 
 .el-boxed .hentry {
   background: #fff;
-  padding: 30px
+  padding: 20px
 }
 
 @media(max-width:1239px) {
@@ -14934,7 +14934,7 @@ body.visual-editor>header.header {
 
 .entry .entry-content ol,
 .entry .entry-content ul {
-  padding-left: 2em;
+  padding-left: 1.5em;
   list-style-position: outside
 }
 
