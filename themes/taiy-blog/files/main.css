@@ -14934,7 +14934,7 @@ body.visual-editor>header.header {
 
 .entry .entry-content ol,
 .entry .entry-content ul {
-  padding-left: 1.5em;
+  padding-left: 1em;
   list-style-position: outside
 }
 
