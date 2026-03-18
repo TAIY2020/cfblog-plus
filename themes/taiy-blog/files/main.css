@@ -14934,7 +14934,9 @@ body.visual-editor>header.header {
 
 .entry .entry-content ol,
 .entry .entry-content ul {
-  padding-left: 1em;
+  padding-left: 1.5em;
+  margin-top: 8px;
+  margin-bottom: 14px;
   list-style-position: outside
 }
 
@@ -23551,13 +23553,6 @@ article.post,
   /* h2 底部 padding 缩小 */
   .entry .entry-content h2 {
     padding-bottom: 8px;
-  }
-
-  /* 列表整体上下间距 */
-  .entry .entry-content ol,
-  .entry .entry-content ul {
-    margin-top: 8px;
-    margin-bottom: 14px;
   }
 
   /* 列表项间距统一 */
