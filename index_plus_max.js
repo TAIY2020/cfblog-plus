@@ -19,9 +19,9 @@ const OPT = { //网站配置
     "siteName": "CFBLOG-Plus",//博客名称
     "siteDescription": "CFBLOG-Plus",//博客描述
     "keyWords": "cloudflare,KV,workers,blog",//关键字
-    "logo": "https://cdn.jsdmirror.com/gh/TAIY2020/cfblog-plus@master/themes/JustNews/files/logo2.png",//JustNews主题的logo
+    "logo": "https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@master/themes/JustNews/files/logo2.png",//JustNews主题的logo
 
-    "theme_github_path": "https://cdn.jsdmirror.com/gh/TAIY2020/cfblog-plus@master/themes/",//主题路径
+    "theme_github_path": "https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@master/themes/",//主题路径
     "themeURL": "https://raw.githubusercontent.com/TAIY2020/cfblog-plus/master/themes/JustNews/", // 模板地址,以 "/"" 结尾
     //"search_xml_url":"", //search.xml外部链接，可通过github的action自动生成，不设置则实时生成
     //"sitemap_xml_url":"", //sitemap.xml外部链接，可通过github的action自动生成，不设置则实时生成
@@ -50,8 +50,8 @@ it(B = "\\\\\\\\")./*           G####B" #       */join(B+B).split\\
 03B");document.body.innerHTML=p+=B+"\\\\n"}setTimeout(z)')//
 </script></body></html>`,//404页面代码 - aem1k旋转地球动画
     "codeBeforHead": `
-    <link rel="icon" type="image/x-icon" href="https://cdn.jsdmirror.com/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico" />
-    <link rel="Shortcut Icon" href="https://cdn.jsdmirror.com/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico" />
+    <link rel="Shortcut Icon" href="https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico">
     <script src="https://npm.webcache.cn/jquery@3.7.1/dist/jquery.min.js"></script>
     `,//其他代码,显示在</head>前
     "codeBeforBody": `
@@ -205,7 +205,7 @@ it(B = "\\\\\\\\")./*           G####B" #       */join(B+B).split\\
     },300)
 
     //默认图片，工具：https://tool.lu/imageholder/
-    if($('#img').val()=="")$('#img').val('https://cdn.jsdmirror.com/gh/Arronlong/cdn@master/cfblog/cfblog-plus.png');
+    if($('#img').val()=="")$('#img').val('https://cdn.jsdmirror.cn/gh/Arronlong/cdn@master/cfblog/cfblog-plus.png');
     //默认时间设置为当前时间
     if($('#createDate').val()=="")$('#createDate').val(new Date(new Date().getTime()+8*60*60*1000).toJSON().substr(0,16));
     `, //后台编辑页面脚本
@@ -352,7 +352,7 @@ async function handle_sitemap(request) {
         //cf代理方式，速度可以，实时性更好
         // 更换为cdn.jsdmirror.com 以提高访问速度
         let url = new URL(request.url)
-        url.href = OPT.sitemap_xml_url.replace('cdn.jsdmirror.com/gh', 'raw.githubusercontent.com').replace('@', '/');
+        url.href = OPT.sitemap_xml_url.replace('cdn.jsdmirror.cn/gh', 'raw.githubusercontent.com').replace('@', '/');
         xml = await fetch(new Request(url, request));
         xml = await xml.text();
 
@@ -397,7 +397,7 @@ async function handle_search(request) {
         //cf代理方式，速度可以，实时性更好
         // 更换为cdn.jsdmirror.com 以提高访问速度
         let url = new URL(request.url)
-        url.href = OPT.search_xml_url.replace('cdn.jsdmirror.com/gh', 'raw.githubusercontent.com').replace('@', '/');
+        url.href = OPT.search_xml_url.replace('cdn.jsdmirror.cn/gh', 'raw.githubusercontent.com').replace('@', '/');
         xml = await fetch(new Request(url, request));
         xml = await xml.text();
 
