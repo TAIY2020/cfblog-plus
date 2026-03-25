@@ -19,9 +19,9 @@ const OPT = { //网站配置
     "siteName": "CFBLOG-Plus",//博客名称
     "siteDescription": "CFBLOG-Plus",//博客描述
     "keyWords": "cloudflare,KV,workers,blog",//关键字
-    "logo": "https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@master/themes/JustNews/files/logo2.png",//JustNews主题的logo
+    "logo": "https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@latest/themes/JustNews/files/logo2.png",//JustNews主题的logo
 
-    "theme_github_path": "https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@master/themes/",//主题路径
+    "theme_github_path": "https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@latest/themes/",//主题路径
     "themeURL": "https://raw.githubusercontent.com/TAIY2020/cfblog-plus/master/themes/JustNews/", // 模板地址,以 "/"" 结尾
     //"search_xml_url":"", //search.xml外部链接，可通过github的action自动生成，不设置则实时生成
     //"sitemap_xml_url":"", //sitemap.xml外部链接，可通过github的action自动生成，不设置则实时生成
@@ -50,8 +50,8 @@ it(B = "\\\\\\\\")./*           G####B" #       */join(B+B).split\\
 03B");document.body.innerHTML=p+=B+"\\\\n"}setTimeout(z)')//
 </script></body></html>`,//404页面代码 - aem1k旋转地球动画
     "codeBeforHead": `
-    <link rel="icon" type="image/x-icon" href="https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico" />
-    <link rel="Shortcut Icon" href="https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@master/themes/wtt-blog/files/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@latest/themes/wtt-blog/files/favicon.ico" />
+    <link rel="Shortcut Icon" href="https://cdn.jsdmirror.cn/gh/TAIY2020/cfblog-plus@latest/themes/wtt-blog/files/favicon.ico">
     <script src="https://npm.webcache.cn/jquery@3.7.1/dist/jquery.min.js"></script>
     `,//其他代码,显示在</head>前
     "codeBeforBody": `
