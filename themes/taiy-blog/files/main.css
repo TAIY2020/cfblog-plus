@@ -14951,6 +14951,14 @@ body.visual-editor>header.header {
   margin: 0 auto
 }
 
+.entry .entry-content img.emoji {
+  display: inline;
+  height: 1.2em;
+  width: 1.2em;
+  margin: 0 2px;
+  vertical-align: text-bottom
+}
+
 .entry .entry-content audio,
 .entry .entry-content embed,
 .entry .entry-content iframe,

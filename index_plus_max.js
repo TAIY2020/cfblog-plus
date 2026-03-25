@@ -204,6 +204,21 @@ it(B = "\\\\\\\\")./*           G####B" #       */join(B+B).split\\
         mdEditor.setToolbarHandler(mdEditor.getToolbarHandles())
     },300)
 
+    // 修复 emoji 对话框点击无法插入的问题（原插件用 .bind() 绑定动态加载的元素导致失效）
+    $(document).on('click', '.editormd-emoji-btn', function() {
+        $(this).toggleClass('selected');
+    });
+    $(document).on('mousedown', '.editormd-emoji-dialog button:first', function() {
+        var vals = [];
+        $('.editormd-emoji-btn.selected').each(function() {
+            vals.push($(this).attr('value'));
+        });
+        if (vals.length > 0 && window.mdEditor) {
+            window.mdEditor.cm.replaceSelection(vals.join(' '));
+            $('.editormd-emoji-btn').removeClass('selected');
+        }
+    });
+
     //默认图片，工具：https://tool.lu/imageholder/
     if($('#img').val()=="")$('#img').val('https://cdn.jsdmirror.cn/gh/Arronlong/cdn@master/cfblog/cfblog-plus.png');
     //默认时间设置为当前时间
