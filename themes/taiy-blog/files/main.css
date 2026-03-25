@@ -34,7 +34,7 @@
   --hljs-bg: #f6f8fa;
   --bgColor-code: rgba(129, 139, 152, .12);
   --primary-very-high: rgb(67.15, 67.15, 67.15);
-  --theme-font-family: "LXGW WenKai Screen", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif
+  -theme-font-family-: "LXGW WenKai Screen", -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Source Han Sans CN, sans-serif
 }
 
 html {

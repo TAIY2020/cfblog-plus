@@ -125,7 +125,11 @@
                             <h1 class="entry-title">{{ &articleSingle.title }}</h1>
                             <div class="entry-info">
                                 <time class="entry-date published" datetime="{{ &articleSingle.createDate }}"
-                                    pubdate="">{{ &articleSingle.createDate10 }}</time>
+                                    pubdate=""><i class="fa-regular fa-calendar"></i> {{ &articleSingle.createDate16 }}</time>
+                                {{ #articleSingle.modifyDate16 }}
+                                <span class="dot">•</span>
+                                <time class="entry-date modified"><i class="fa-regular fa-pen-to-square"></i> {{ &articleSingle.modifyDate16 }}</time>
+                                {{ /articleSingle.modifyDate16 }}
                                 <span class="dot">•</span>
                                 {{ #articleSingle.category }}
                                 <a href="/category/{{&.}}" rel="category tag">{{&.}}</a>

@@ -1106,11 +1106,17 @@ function processArticleProp(articles) {
             }
             //调整文章的日期(yyyy-MM-dd)、年、月、日、内容长度和url
             articles[i].createDate10 = articles[i].createDate.substr(0, 10),
+                articles[i].createDate16 = articles[i].createDate.substr(0, 16),
                 articles[i].createDateYear = articles[i].createDate.substr(0, 4),
                 articles[i].createDateMonth = articles[i].createDate.substr(5, 7),
                 articles[i].createDateDay = articles[i].createDate.substr(8, 10),
                 articles[i].contentLength = articles[i].contentText.length,
                 articles[i].url = "/article/" + articles[i].id + "/" + articles[i].link + ".html";
+            //最后编辑时间(yyyy-MM-dd HH:mm)
+            if (articles[i].modify_timestamp) {
+                let d = new Date(articles[i].modify_timestamp);
+                articles[i].modifyDate16 = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+            }
         }
     }
 }
