@@ -124,21 +124,24 @@
                         <div class="entry-head">
                             <h1 class="entry-title">{{ &articleSingle.title }}</h1>
                             <div class="entry-info">
-                                <time class="entry-date published" datetime="{{ &articleSingle.createDate }}"
-                                    pubdate=""><i class="fa-regular fa-calendar"></i> {{ &articleSingle.createDate16 }}</time>
-                                {{ #articleSingle.modifyDate16 }}
-                                <span class="dot">•</span>
-                                <time class="entry-date modified"><i class="fa-regular fa-pen-to-square"></i> {{ &articleSingle.modifyDate16 }}</time>
-                                {{ /articleSingle.modifyDate16 }}
-                                <span class="dot">•</span>
-                                {{ #articleSingle.category }}
-                                <a href="/category/{{&.}}" rel="category tag">{{&.}}</a>
-                                {{ /articleSingle.category }}
-                                <span class="dot">•</span>
-                                <span id="{{ &articleSingle.url }}" class="leancloud_visitors">
-                                    <em>{{ &OPT.otherCodeA }}</em>
-                                    <i class="leancloud-visitors-count"></i>
-                                </span>
+                                <div class="entry-info-date">
+                                    <time class="entry-date published" datetime="{{ &articleSingle.createDate }}"
+                                        pubdate=""><i class="fa-regular fa-calendar"></i> {{ &articleSingle.createDate16 }}</time>
+                                    {{ #articleSingle.modifyDate16 }}
+                                    <span class="dot">•</span>
+                                    <time class="entry-date modified"><i class="fa-regular fa-pen-to-square"></i> {{ &articleSingle.modifyDate16 }}</time>
+                                    {{ /articleSingle.modifyDate16 }}
+                                </div>
+                                <div class="entry-info-meta">
+                                    {{ #articleSingle.category }}
+                                    <a href="/category/{{&.}}" rel="category tag">{{&.}}</a>
+                                    {{ /articleSingle.category }}
+                                    <span class="dot">•</span>
+                                    <span id="{{ &articleSingle.url }}" class="leancloud_visitors">
+                                        <em>{{ &OPT.otherCodeA }}</em>
+                                        <i class="leancloud-visitors-count"></i>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div class="entry-content">

@@ -14780,6 +14780,13 @@ body.visual-editor>header.header {
   color: #999
 }
 
+.entry .entry-info .entry-info-date,
+.entry .entry-info .entry-info-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .entry .entry-info a {
   color: #999
 }
@@ -23534,6 +23541,23 @@ article.post,
   /* 减少标题区与正文之间的间距 */
   .entry .entry-head {
     margin-bottom: 10px;
+  }
+
+  /* 移动端文章元信息优化：分两行显示 */
+  .entry .entry-info {
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .entry .entry-info .entry-info-date,
+  .entry .entry-info .entry-info-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .entry .entry-info .entry-date {
+    white-space: nowrap;
   }
 
   /* 减少移动端标题上下间距，统一节奏 */
