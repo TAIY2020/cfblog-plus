@@ -614,6 +614,7 @@ async function handle_article(id) {
         cfg.widgetRecentlyList = articles_recently,//近期文章
         cfg.articleOlder = articles_sibling[0] ? [articles_sibling[0]] : [],//上篇文章
         cfg.articleSingle = article,//本篇文章
+        article.contentLength = article.contentHtml ? article.contentHtml.replace(/<\/?[^>]*>/g, "").replace(/&[a-zA-Z0-9#]+;/g, " ").replace(/\s+/g, "").length : 0,
         cfg.articleNewer = articles_sibling[2] ? [articles_sibling[2]] : [],//下篇文章
         cfg.title = title,//网页title
         cfg.keyWords = keyWord;//SEO关键字
@@ -1125,7 +1126,7 @@ function processArticleProp(articles) {
                 articles[i].createDateYear = articles[i].createDate.substr(0, 4),
                 articles[i].createDateMonth = articles[i].createDate.substr(5, 7),
                 articles[i].createDateDay = articles[i].createDate.substr(8, 10),
-                articles[i].contentLength = articles[i].contentText.length,
+                articles[i].contentLength = articles[i].contentHtml ? articles[i].contentHtml.replace(/<\/?[^>]*>/g, "").replace(/&[a-zA-Z0-9#]+;/g, " ").replace(/\s+/g, "").length : articles[i].contentText.length,
                 articles[i].url = "/article/" + articles[i].id + "/" + articles[i].link + ".html";
             //最后编辑时间(yyyy-MM-dd HH:mm)
             if (articles[i].modify_timestamp) {
