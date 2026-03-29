@@ -14914,9 +14914,9 @@ body.visual-editor>header.header {
   }
 }
 
-.entry .entry-content>p {
+/* .entry .entry-content>p {
   white-space: pre-wrap
-}
+} */
 
 .entry .entry-content p.has-drop-cap:not(:focus):first-letter {
   font-size: 3em;
