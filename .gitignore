@@ -4,7 +4,7 @@
 .claude/
 CLAUDE.md
 .vscode/*
-.docs/*
+docs/*
 !.vscode/extensions.json
 .idea
 .DS_Store
