@@ -13412,14 +13412,14 @@ body>header.header .logo {
 
 body>header.header .logo img {
   width: auto;
-  max-height: 32px;
+  max-height: 35px;
   border-radius: 50%;
   vertical-align: top
 }
 
 @media(max-width:767px) {
   body>header.header .logo img {
-    max-height: 26px
+    max-height: 30px
   }
 }
 
