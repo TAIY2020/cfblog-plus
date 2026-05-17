@@ -1,0 +1,22 @@
+*.zip
+.env
+.env.*
+.claude/
+CLAUDE.md
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.vscode
+
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
