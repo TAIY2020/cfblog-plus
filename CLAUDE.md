@@ -6,12 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 CFBlog-Plus 是一个运行在 Cloudflare Workers 上的博客系统，使用 Cloudflare KV 作为数据库。这是基于 gdtool/cloudflare-workers-blog 的二次开发版本。
 
-**核心文件**: `index_plus.js` - 包含完整的 Workers 代码，包括配置、路由处理、渲染逻辑等所有功能。
+**核心文件**: `index_plus_max.js` - 包含完整的 Workers 代码，包括配置、路由处理、渲染逻辑等所有功能。
 
 ## 架构说明
 
 ### 单文件架构
-整个博客系统的后端逻辑都在 `index_plus.js` 中实现，采用以下结构：
+整个博客系统的后端逻辑都在 `index_plus_max.js` 中实现，采用以下结构：
 
 1. **配置区** (顶部)
    - `ACCOUNT`: 账号、密码、API token、KV 变量绑定
@@ -48,10 +48,10 @@ CFBlog-Plus 是一个运行在 Cloudflare Workers 上的博客系统，使用 Cl
   - `CFBLOG_BRANCH`: 目标分支
 
 ### Cloudflare Workers 部署
-1. 修改 `index_plus.js` 中的 `ACCOUNT` 和 `OPT` 配置
+1. 修改 `index_plus_max.js` 中的 `ACCOUNT` 和 `OPT` 配置
 2. 在 Cloudflare Workers 中创建 KV 命名空间
 3. 绑定 KV 到 Workers（变量名与 `ACCOUNT.kv_var` 一致）
-4. 部署 `index_plus.js` 到 Workers
+4. 部署 `index_plus_max.js` 到 Workers
 
 ## 关键配置说明
 
@@ -77,7 +77,21 @@ CFBlog-Plus 是一个运行在 Cloudflare Workers 上的博客系统，使用 Cl
 
 ## 修改注意事项
 
-- 修改配置时只需编辑 `index_plus.js` 顶部的 `ACCOUNT` 和 `OPT` 对象
+- 修改配置时只需编辑 `index_plus_max.js` 顶部的 `ACCOUNT` 和 `OPT` 对象
 - 修改主题时编辑 `themes/` 目录下对应主题的 HTML 文件
 - 路由逻辑在 `handlerRequest` 函数的 switch 语句中
 - 所有 HTML 页面使用 Mustache.js 语法进行变量替换
+
+## Agent skills
+
+### Issue tracker
+
+issue 以本地 markdown 形式存放于 `.scratch/<feature>/`。详见 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+使用默认五个标签（needs-triage / needs-info / ready-for-agent / ready-for-human / wontfix）。详见 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+单上下文布局（根目录 `CONTEXT.md` + `docs/adr/`）。详见 `docs/agents/domain.md`。
