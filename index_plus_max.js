@@ -12,7 +12,7 @@ const ACCOUNT = { //账号相关，安全性更高
     "kv_var": this['CFBLOG'],//workers绑定kv时用的变量名
 }
 
-const OPT = { //网站配置
+const OPT = { //网站配置 - 内部仅用于声明,文件级真正消费者使用下方 6 个冻结 slice 与派生扁平 OPT
 
     /*--前台参数--*/
     "siteDomain": "域名",// 域名(不带https 也不带/)
@@ -227,7 +227,7 @@ it(B = "\\\\\\\\")./*           G####B" #       */join(B+B).split\\
 
 };
 
-//---对部分配置进行处理---
+//---对部分配置进行处理---见 ADR-0003: OPT 整体与 6 个 slice 在 normalize 后冻结
 {
     //CFBLOG 通用变量
     this.CFBLOG = ACCOUNT.kv_var;
@@ -243,11 +243,68 @@ it(B = "\\\\\\\\")./*           G####B" #       */join(B+B).split\\
     if (OPT.theme_github_path.substr(-1) != '/') {
         OPT.theme_github_path = OPT.theme_github_path + '/';
     }
-    //置顶样式对于前台来说，与codeBeforHead结合即可
-    if (OPT.top_flag_style) {
-        OPT.codeBeforHead = (OPT.codeBeforHead || '') + OPT.top_flag_style
-    }
+    //置顶样式 top_flag_style → codeBeforHead 的派生由 Theme module 接手(themes.resolve.effectiveCodeBeforHead)
+
+    //--- 见 ADR-0003: 切为 6 个冻结 slice + 冻结扁平 OPT ---
+    Object.freeze(OPT);
 }
+
+//站点元(SEO / 站点名 / logo / 版权)
+const siteConfig = Object.freeze({
+    siteDomain: OPT.siteDomain,
+    siteName: OPT.siteName,
+    siteDescription: OPT.siteDescription,
+    keyWords: OPT.keyWords,
+    logo: OPT.logo,
+    copyRight: OPT.copyRight,
+});
+
+//主题(URL 解析 / admin 编辑器脚本注入)
+const themeConfig = Object.freeze({
+    theme_github_path: OPT.theme_github_path,
+    themeURL: OPT.themeURL,
+    editor_page_scripts: OPT.editor_page_scripts,
+});
+
+//前台列表 / 分页 / 近期文章
+const listingConfig = Object.freeze({
+    pageSize: OPT.pageSize,
+    recentlySize: OPT.recentlySize,
+    recentlyType: OPT.recentlyType,
+});
+
+//Article 装饰视图(置顶/隐藏 flag + 摘要长度)
+const articleViewConfig = Object.freeze({
+    top_flag: OPT.top_flag,
+    top_flag_style: OPT.top_flag_style,
+    hidden_flag: OPT.hidden_flag,
+    hidden_flag_style: OPT.hidden_flag_style,
+    readMoreLength: OPT.readMoreLength,
+});
+
+//内嵌进模板的代码片段
+const embedsConfig = Object.freeze({
+    codeBeforHead: OPT.codeBeforHead,
+    codeBeforBody: OPT.codeBeforBody,
+    commentCode: OPT.commentCode,
+    widgetOther: OPT.widgetOther,
+    otherCodeA: OPT.otherCodeA,
+    otherCodeB: OPT.otherCodeB,
+    otherCodeC: OPT.otherCodeC,
+    otherCodeD: OPT.otherCodeD,
+    otherCodeE: OPT.otherCodeE,
+});
+
+//运行时(缓存/权限/admin 首页 tab/robots/404/feed url)
+const runtimeConfig = Object.freeze({
+    cacheTime: OPT.cacheTime,
+    privateBlog: OPT.privateBlog,
+    admin_home_idx: OPT.admin_home_idx,
+    robots: OPT.robots,
+    html404: OPT.html404,
+    search_xml_url: OPT.search_xml_url,
+    sitemap_xml_url: OPT.sitemap_xml_url,
+});
 
 /**------【②.articles 模块：Article 持久化 + 装饰 + 派生 WidgetTags】-----**/
 
@@ -280,19 +337,16 @@ function createArticleRepo({ kv, view }) {
     function _decorate(a, mode) {
         if (!a || mode === "none") return a;
         const out = Object.assign({}, a);
-        if (out.top_timestamp && !String(out.title).startsWith(view.topFlag)) {
-            out.title = view.topFlag + out.title;
+        if (out.top_timestamp && !String(out.title).startsWith(view.top_flag)) {
+            out.title = view.top_flag + out.title;
         }
-        if (mode === "admin" && out.hidden && !String(out.title).startsWith(view.hiddenFlag)) {
-            out.title = view.hiddenFlag + out.title;
+        if (mode === "admin" && out.hidden && !String(out.title).startsWith(view.hidden_flag)) {
+            out.title = view.hidden_flag + out.title;
         }
         const createDate = out.createDate || "";
         out.createDate10 = createDate.substr(0, 10);
         out.createDate16 = createDate.substr(0, 16);
         out.createDateYear = createDate.substr(0, 4);
-        // 保持原 processArticleProp 行为(substr(5,7)/substr(8,10))-主题模板已按此渲染
-        out.createDateMonth = createDate.substr(5, 7);
-        out.createDateDay = createDate.substr(8, 10);
         out.contentLength = out.contentHtml
             ? out.contentHtml.replace(/<\/?[^>]*>/g, "").replace(/&[a-zA-Z0-9#]+;/g, " ").replace(/\s+/g, "").length
             : (out.contentText ? out.contentText.length : 0);
@@ -470,14 +524,64 @@ function createArticleRepo({ kv, view }) {
     };
 }
 
-// 文件级单例:注入 KV namespace 与视图配置
+// 文件级单例:注入 KV namespace 与 articleViewConfig slice(ADR-0003)
 const articles = createArticleRepo({
     kv: CFBLOG,
-    view: {
-        topFlag: OPT.top_flag,
-        hiddenFlag: OPT.hidden_flag,
-        readMoreLength: OPT.readMoreLength,
-    },
+    view: articleViewConfig,
+});
+
+/**------【②b.themes 模块:主题 URL 解析 + 模板 fetch + 页面壳子派生】-----**/
+
+// Theme module 工厂闭包(候选 4)
+function createThemeModule({ themeConfig, articleViewConfig, embedsConfig }) {
+    //模块初始化时一次性派生(slice 全部冻结,派生值也常驻)
+    const effectiveCodeBeforHead = (embedsConfig.codeBeforHead || '') + (articleViewConfig.top_flag_style || '');
+    const effectiveCodeBeforBody = embedsConfig.codeBeforBody || '';
+    const editorPageScripts = themeConfig.editor_page_scripts || '';
+
+    //每请求一次:根据 ?theme= 选定 themeURL,封装请求作用域的主题信息
+    function resolve(query) {
+        const override = query && query.themeOverride;
+        let themeURL = themeConfig.themeURL;
+        let themeName = null;
+        let overridden = false;
+        if (override) {
+            themeURL = themeConfig.theme_github_path + override + "/";
+            themeName = override;
+            overridden = true;
+        }
+        //default → default2.0 重定向
+        if (themeConfig.theme_github_path + "default/" === themeURL) {
+            themeURL = themeConfig.theme_github_path + "default2.0/";
+            themeName = "default2.0";
+        }
+        return Object.freeze({
+            themeURL: themeURL,
+            themeName: themeName,
+            overridden: overridden,
+            effectiveCodeBeforHead: effectiveCodeBeforHead,
+            effectiveCodeBeforBody: effectiveCodeBeforBody,
+            editorPageScripts: editorPageScripts,
+        });
+    }
+
+    //模板 fetch + editor_page_scripts 注入
+    async function template(themeCtx, name) {
+        const path = name.replace(".html", "");
+        let html = await (await fetch(themeCtx.themeURL + path + ".html", { cf: { cacheTtl: 600 } })).text();
+        if ("admin/index|admin/editor".includes(path)) {
+            html = html.replace("$('#WidgetCategory').val(JSON.stringify(categoryJson))", themeCtx.editorPageScripts + "$('#WidgetCategory').val(JSON.stringify(categoryJson))");
+        }
+        return html;
+    }
+
+    return { resolve: resolve, template: template };
+}
+
+const themes = createThemeModule({
+    themeConfig: themeConfig,
+    articleViewConfig: articleViewConfig,
+    embedsConfig: embedsConfig,
 });
 
 /**------【②.猎杀时刻：请求处理入口】-----**/
@@ -488,137 +592,163 @@ addEventListener("fetch", event => {
     event.respondWith(handlerRequest(event))
 })
 
-// 处理请求
+// 处理请求 - dispatcher: 路由 → handler → Outcome → materialize → 应用路径相关 cache 策略
 async function handlerRequest(event) {
     let request = event.request
     //获取url请求对象
     let url = new URL(request.url)
     let paths = url.pathname.trim("/").split("/")
 
-    //校验权限
+    //校验权限(失败返回 401 Outcome,绕过边缘缓存)
     if (("admin" == paths[0] || true === OPT.privateBlog) && !parseBasicAuth(request)) {
-        return new Response("Unauthorized", {
+        return materialize({
+            kind: "text",
+            body: "Unauthorized",
+            status: 401,
             headers: {
                 "WWW-Authenticate": 'Basic realm="cfblog"',
-                "Access-Control-Allow-Origin": "*"
+                "Access-Control-Allow-Origin": "*",
             },
-            status: 401
         });
     }
 
     //组装请求url，查看是否有缓存
     const D = caches.default,
         M = "https://" + OPT.siteDomain + url.pathname,
-        x = new Request(M, request);
+        cacheKey = new Request(M, request);
     console.log("cacheFullPath:", M);
-    let k = await D.match(x);
-    if (k) {
+    const cached = await D.match(cacheKey);
+    if (cached) {
         console.log("hit cache!")
-        return k;
+        return cached;
     }
 
+    //请求级 ThemeContext(候选 4):?theme= 由 themes.resolve 处理,不再突变 themeConfig
+    const themeCtx = themes.resolve({ themeOverride: url.searchParams.get("theme") });
+
+    //路由分发:每个 handler 返回 Outcome(见 ADR-0002),dispatcher 统一物化
+    let outcome;
     switch (paths[0]) {
-        case "favicon.ico": //图标
-            k = await handle_favicon(request);
+        case "favicon.ico":
+            outcome = handle_favicon();
             break;
         case "robots.txt":
-            k = await handle_robots(request);
+            outcome = handle_robots();
             break;
         case "sitemap.xml":
-            k = await handle_sitemap(request);
+            outcome = await handle_sitemap(request);
             break;
         case "search.xml":
-            k = await handle_search(request);
+            outcome = await handle_search(request);
             break;
-        case "admin": //后台
-            k = await handle_admin(request);
+        case "admin":
+            outcome = await handle_admin(request, themeCtx);
             break;
-        case "article": //文章内容页
-            k = await handle_article(paths[1]);
+        case "article":
+            outcome = await handle_article(paths[1], themeCtx);
             break;
-        case "": //文章 首页
-        case "page": //文章 分页
-        case "category": //分类 分页
-        case "tags": //标签 分页
-            k = await renderBlog(url);
+        case "":
+        case "page":
+        case "category":
+        case "tags":
+            outcome = await renderBlog(url, themeCtx);
             break;
         default:
-            //其他页面返回404
-            k = new Response(OPT.html404, {
-                headers: {
-                    "content-type": "text/html;charset=UTF-8"
-                },
-                status: 200
-            })
+            outcome = { kind: "notFound" };
             break;
     }
-    //设置浏览器缓存时间:后台不缓存、只缓存前台
+
+    const response = materialize(outcome);
+
+    //缓存策略:admin → no-store; 其余 → public+max-age + edge cache.put
     try {
         if ("admin" == paths[0]) {
-            k.headers.set("Cache-Control", "no-store")
+            response.headers.set("Cache-Control", "no-store")
         } else {
-            k.headers.set("Cache-Control", "public, max-age=" + OPT.cacheTime),
-                event.waitUntil(D.put(M, k.clone()))
+            response.headers.set("Cache-Control", "public, max-age=" + OPT.cacheTime);
+            event.waitUntil(D.put(cacheKey, response.clone()));
         }
     } catch (e) { }
 
-    return k
+    return response;
+}
+
+//Outcome → Response 物化(ADR-0002)
+function materialize(outcome) {
+    if (outcome.kind === "redirect") {
+        const headers = Object.assign({ "location": outcome.to }, outcome.headers || {});
+        return new Response("", { status: outcome.status || 302, headers: headers });
+    }
+    let body, contentType, status = outcome.status;
+    switch (outcome.kind) {
+        case "html":
+            body = outcome.body;
+            contentType = "text/html;charset=UTF-8";
+            break;
+        case "json":
+            body = typeof outcome.body === "string" ? outcome.body : JSON.stringify(outcome.body);
+            contentType = "application/json;charset=UTF-8";
+            break;
+        case "xml":
+            body = outcome.body;
+            contentType = "text/xml;charset=UTF-8";
+            break;
+        case "text":
+            body = outcome.body;
+            contentType = "text/plain;charset=UTF-8";
+            break;
+        case "file":
+            body = outcome.content;
+            contentType = "application/octet-stream;charset=utf-8";
+            break;
+        case "notFound":
+            body = OPT.html404;
+            contentType = "text/html;charset=UTF-8";
+            status = status || 404;
+            break;
+        default:
+            body = "Unknown outcome kind: " + outcome.kind;
+            contentType = "text/plain;charset=UTF-8";
+            status = status || 500;
+    }
+    if (status == null) status = 200;
+    const headers = { "content-type": contentType };
+    if (outcome.kind === "file") {
+        headers["Content-Disposition"] = "attachment; filename=" + outcome.name;
+    }
+    if (outcome.headers) Object.assign(headers, outcome.headers);
+    return new Response(body, { status: status, headers: headers });
 }
 
 /**------【③.分而治之：各种请求分开处理】-----**/
 
 //访问: favicon.ico
-async function handle_favicon(request) {
-    // 返回404，使用 codeBeforHead 中自定义的 favicon
-    return new Response("404", {
-        headers: {
-            "content-type": "text/plain;charset=UTF-8"
-        },
-        status: 404
-    });
+function handle_favicon() {
+    //返回 404 文本(实际 favicon 走 codeBeforHead 中自定义的 link rel="icon")
+    return { kind: "text", body: "404", status: 404 };
 }
 
 //访问: robots.txt
-async function handle_robots(request) {
-    return new Response(OPT.robots + "\nSitemap: https://" + OPT.siteDomain + "/sitemap.xml", {
-        headers: {
-            "content-type": "text/plain;charset=UTF-8"
-        },
-        status: 200
-    });
+function handle_robots() {
+    return {
+        kind: "text",
+        body: OPT.robots + "\nSitemap: https://" + OPT.siteDomain + "/sitemap.xml",
+    };
 }
 
 //访问: sitemap.xml
 async function handle_sitemap(request) {
-    //如果设置了参数，则使用参数指定的url
-    //可使用github action方式自动定期更新
     let xml;
     if (OPT.sitemap_xml_url) {
-
-        //cf代理方式，速度可以，实时性更好
-        // 更换为cdn.jsdmirror.com 以提高访问速度
-        let url = new URL(request.url)
-        url.href = OPT.sitemap_xml_url.replace('cdn.jsdmirror.com/gh', 'raw.githubusercontent.com').replace('@', '/');
-        xml = await fetch(new Request(url, request));
-        xml = await xml.text();
-
-        ////302方式，如果使用jsdelivr作为cdn，速度快，但更新有延迟
-        //return new Response("",{
-        //    headers:{
-        //        "location":OPT.sitemap_xml_url
-        //    },
-        //    status:302
-        //});
-
-    } else { //未配置参数，则实时获取结构
+        //cf代理方式
+        let proxyUrl = new URL(request.url);
+        proxyUrl.href = OPT.sitemap_xml_url.replace('cdn.jsdmirror.com/gh', 'raw.githubusercontent.com').replace('@', '/');
+        const r = await fetch(new Request(proxyUrl, request));
+        xml = await r.text();
+    } else {
         xml = await buildSitemapXml();
     }
-    return new Response(xml, {
-        headers: {
-            "content-type": "text/xml;charset=UTF-8"
-        },
-        status: 200
-    });
+    return { kind: "xml", body: xml };
 }
 
 //组装 sitemap.xml(前台路由与 admin 下载共用)
@@ -640,35 +770,16 @@ async function buildSitemapXml() {
 
 //访问: search.xml
 async function handle_search(request) {
-    //如果设置了参数，则使用参数指定的url
-    //可使用github action方式自动定期更新
     let xml;
     if (OPT.search_xml_url) {
-
-        //cf代理方式，速度可以，实时性更好
-        // 更换为cdn.jsdmirror.com 以提高访问速度
-        let url = new URL(request.url)
-        url.href = OPT.search_xml_url.replace('cdn.jsdmirror.com/gh', 'raw.githubusercontent.com').replace('@', '/');
-        xml = await fetch(new Request(url, request));
-        xml = await xml.text();
-
-        ////302方式，如果使用jsdelivr作为cdn，速度快，但更新有延迟
-        //return new Response("",{
-        //    headers:{
-        //        "location":OPT.search_xml_url
-        //    },
-        //    status:302
-        //});
-
-    } else { //未配置参数，则实时获取结构
+        let proxyUrl = new URL(request.url);
+        proxyUrl.href = OPT.search_xml_url.replace('cdn.jsdmirror.com/gh', 'raw.githubusercontent.com').replace('@', '/');
+        const r = await fetch(new Request(proxyUrl, request));
+        xml = await r.text();
+    } else {
         xml = await buildSearchXml();
     }
-    return new Response(xml, {
-        headers: {
-            "content-type": "text/xml;charset=UTF-8"
-        },
-        status: 200
-    });
+    return { kind: "xml", body: xml };
 }
 
 //组装 search.xml(前台路由与 admin 下载共用)
@@ -692,26 +803,16 @@ async function buildSearchXml() {
 }
 
 //渲染前端博客：指定一级路径page\tags\category，二级路径value，以及页码，默认第一页
-async function renderBlog(url) {
+async function renderBlog(url, themeCtx) {
     console.log("---进入renderBlog函数---，path=", url.href.substr(url.origin.length))
 
-    //处理主题预览及分页
-    let theme = url.searchParams.get("theme"),
-        pageSize = url.searchParams.get("pageSize");
-    if (theme) {
-        OPT.themeURL = OPT.theme_github_path + theme + "/";
-    }
-    if (pageSize) {
-        OPT.pageSize = parseInt(pageSize);
-    }
-    //如果采用默认default主题，则改为加载default2.0主题
-    if (OPT.theme_github_path + "default/" == OPT.themeURL) {
-        OPT.themeURL = OPT.theme_github_path + "default2.0/";
-    }
-    console.log("theme pageSize", OPT.pageSize, OPT.themeURL)
+    //?pageSize= 仅作用于本次请求,不动 listingConfig
+    const pageSizeOverride = url.searchParams.get("pageSize");
+    const effectivePageSize = pageSizeOverride ? parseInt(pageSizeOverride) : OPT.pageSize;
+    console.log("theme pageSize", effectivePageSize, themeCtx.themeURL)
 
     //获取主页模板源码、widgets
-    let theme_html = await getThemeHtml("index"),
+    let theme_html = await themes.template(themeCtx, "index"),
         menus = await getWidgetMenu(),
         categoryWidget = await getWidgetCategory(),
         tagsWidget = await getWidgetTags(),
@@ -719,7 +820,7 @@ async function renderBlog(url) {
 
     //解析路由,组装 articles.list 查询参数
     let paths = url.pathname.trim("/").split("/")
-    let listOpts = { sort: "top", decorate: "front", page: 1, pageSize: OPT.pageSize };
+    let listOpts = { sort: "top", decorate: "front", page: 1, pageSize: effectivePageSize };
     switch (paths[0] || "page") {
         case "page":
             listOpts.page = parseInt(paths[1] || 1);
@@ -729,7 +830,8 @@ async function renderBlog(url) {
             let category_tag = paths.slice(1).join("");
             if (paths.length > 3 && paths.includes("page")) {
                 listOpts.page = parseInt(paths[paths.indexOf("page") + 1]);
-                category_tag = paths.slice(1, paths.lastIndexOf("page") - 1).join("");
+                //slice end 是 exclusive,直接取到 "page" 索引即可;原代码多减了 1 会丢一段
+                category_tag = paths.slice(1, paths.lastIndexOf("page")).join("");
             }
             category_tag = decodeURIComponent(category_tag);
             listOpts[paths[0] === "tags" ? "tag" : "category"] = category_tag;
@@ -752,7 +854,7 @@ async function renderBlog(url) {
     let newer = (pageNo === 1) ? [] : [{ title: "上一页", url: url_prefix + "/page/" + (pageNo - 1) }];
     let older = (pageNo >= listed.pageCount) ? [] : [{ title: "下一页", url: url_prefix + "/page/" + (pageNo + 1) }];
 
-    //组装渲染上下文
+    //组装渲染上下文。cfg.OPT 在扁平 OPT 之上叠加 themeCtx 的页面壳子派生(候选 4)
     let title = (pageNo > 1 ? "page " + pageNo + " - " : "") + OPT.siteName;
     let cfg = {
         widgetMenuList: menus,
@@ -765,23 +867,21 @@ async function renderBlog(url) {
         pageOlder: older,
         title: title,
         keyWords: OPT.keyWords,
-        OPT: OPT,
+        OPT: Object.assign({}, OPT, {
+            codeBeforHead: themeCtx.effectiveCodeBeforHead,
+            codeBeforBody: themeCtx.effectiveCodeBeforBody,
+        }),
     };
 
     let html = Mustache.render(theme_html, cfg)
 
-    return new Response(html, {
-        headers: {
-            "content-type": "text/html;charset=UTF-8"
-        },
-        status: 200
-    })
+    return { kind: "html", body: html };
 }
 
 //渲染前端博客的文章内容页
-async function handle_article(id) {
+async function handle_article(id, themeCtx) {
     //获取内容页模板源码与 widgets
-    let theme_html = await getThemeHtml("article"),
+    let theme_html = await themes.template(themeCtx, "article"),
         menus = await getWidgetMenu(),
         categoryWidget = await getWidgetCategory(),
         tagsWidget = await getWidgetTags(),
@@ -799,12 +899,7 @@ async function handle_article(id) {
 
     //文章不存在时返回404页面
     if (!article) {
-        return new Response(OPT.html404, {
-            headers: {
-                "content-type": "text/html;charset=UTF-8"
-            },
-            status: 404
-        })
+        return { kind: "notFound" };
     }
 
     //修复旧文章中 emoji 图片的 HTTP 混合内容问题
@@ -830,252 +925,229 @@ async function handle_article(id) {
         articleNewer: sib.next ? [sib.next] : [],
         title: title,
         keyWords: keyWord,
-        OPT: OPT,
+        OPT: Object.assign({}, OPT, {
+            codeBeforHead: themeCtx.effectiveCodeBeforHead,
+            codeBeforBody: themeCtx.effectiveCodeBeforBody,
+        }),
     };
 
     let html = Mustache.render(theme_html, cfg)
 
-    //以html格式返回
-    return new Response(html, {
-        headers: {
-            "content-type": "text/html;charset=UTF-8"
-        },
-        status: 200
-    })
+    return { kind: "html", body: html };
 }
 
-//后台请求处理
-async function handle_admin(request) {
-    let url = new URL(request.url),
-        paths = url.pathname.trim("/").split("/"),
-        html,//返回html
-        json,//返回json
-        file;//返回文件
-    //新建页
-    if (1 == paths.length || "list" == paths[1]) {
-        //读取主题的admin/index.html源码
-        let theme_html = await getThemeHtml("admin/index"),
-            //KV中读取导航栏、分类目录、链接、近期文章等配置信息
-            categoryJson = await getWidgetCategory(),
-            menuJson = await getWidgetMenu(),
-            linkJson = await getWidgetLink();
-
-        //手动替换<!--{xxx}-->格式的参数
-        html = theme_html.replaceHtmlPara("categoryJson", JSON.stringify(categoryJson))
-            .replaceHtmlPara("menuJson", JSON.stringify(menuJson))
-            .replaceHtmlPara("linkJson", JSON.stringify(linkJson))
-
-        //添加后台首页配置
-        if (OPT.admin_home_idx && OPT.admin_home_idx >= 1 && OPT.admin_home_idx <= 4) {
-            html = html.replace("$('#myTab li:eq(0) 1').tab('show')", "$($('#myTab a[href*=\"'+location.hash+'\"]')[0]||$('#myTab a:eq(" + OPT.admin_home_idx + ")')).tab('show')")
-        }
-        //添加置顶样式
-        if (OPT.top_flag_style) {
-            html += OPT.top_flag_style
-        }
-        //添加隐藏样式
-        if (OPT.hidden_flag_style) {
-            html += OPT.hidden_flag_style
-        }
+//后台请求处理:基于 ADMIN_ACTIONS 集中表的 dispatcher(候选 2)
+async function handle_admin(request, themeCtx) {
+    const url = new URL(request.url);
+    const paths = url.pathname.trim("/").split("/");
+    const ctx = { request: request, paths: paths, themeCtx: themeCtx, query: url.searchParams };
+    //paths[0]==="admin",paths[1] 是 action 名,paths[2..] 是 action 参数
+    const actionName = paths.length === 1 ? "" : paths[1];
+    const action = ADMIN_ACTIONS[actionName];
+    if (!action) {
+        return { kind: "json", body: '{"msg":"some errors","rst":false}' };
     }
+    return await action(ctx, ...paths.slice(2));
+}
 
-    //发布:重建 WidgetTags(articles.save 已自动维护; 此入口保留为手动 rebuild + purge)
-    if ("publish" == paths[1]) {
-        await articles.rebuildFacets();
-        json = await purge() ? '{"msg":"published ,purge Cache true","rst":true}' : '{"msg":"published ,buuuuuuuuuuuut purge Cache false !!!!!!","rst":true}'
+//--- admin actions: (ctx, ...pathSegments) → Outcome ---
+
+//admin 首页(/admin 或 /admin/list):渲染 admin/index 模板,叠加首页 tab 与置顶/隐藏样式
+async function adminList(ctx) {
+    let theme_html = await themes.template(ctx.themeCtx, "admin/index");
+    const categoryJson = await getWidgetCategory();
+    const menuJson = await getWidgetMenu();
+    const linkJson = await getWidgetLink();
+
+    let html = theme_html.replaceHtmlPara("categoryJson", JSON.stringify(categoryJson))
+        .replaceHtmlPara("menuJson", JSON.stringify(menuJson))
+        .replaceHtmlPara("linkJson", JSON.stringify(linkJson));
+
+    if (OPT.admin_home_idx && OPT.admin_home_idx >= 1 && OPT.admin_home_idx <= 4) {
+        html = html.replace("$('#myTab li:eq(0) 1').tab('show')", "$($('#myTab a[href*=\"'+location.hash+'\"]')[0]||$('#myTab a:eq(" + OPT.admin_home_idx + ")')).tab('show')");
     }
+    //admin 列表里展示 top/hidden 标记需要对应 CSS
+    if (OPT.top_flag_style) html += OPT.top_flag_style;
+    if (OPT.hidden_flag_style) html += OPT.hidden_flag_style;
 
-    //文章列表
-    if ("getList" == paths[1]) {
-        //默认取第一页，每页20篇
-        let pageNo = (undefined === paths[2]) ? 1 : parseInt(paths[2]);
-        const result = await articles.list({
-            page: pageNo, pageSize: 20,
-            includeHidden: true,
-            sort: "top",
-            decorate: "admin",
-        });
-        json = JSON.stringify(result.items);
+    return { kind: "html", body: html };
+}
+
+//发布:手动重建 WidgetTags + purge CDN
+async function adminPublish(ctx) {
+    await articles.rebuildFacets();
+    const ok = await purge();
+    return {
+        kind: "json",
+        body: ok ? '{"msg":"published ,purge Cache true","rst":true}' : '{"msg":"published ,buuuuuuuuuuuut purge Cache false !!!!!!","rst":true}',
+    };
+}
+
+//admin 文章列表分页(每页 20):返回装饰后的 admin 视图
+async function adminGetList(ctx, pageNoStr) {
+    const pageNo = pageNoStr === undefined ? 1 : parseInt(pageNoStr);
+    const result = await articles.list({
+        page: pageNo, pageSize: 20,
+        includeHidden: true,
+        sort: "top",
+        decorate: "admin",
+    });
+    return { kind: "json", body: JSON.stringify(result.items) };
+}
+
+//修改文章:渲染 admin/edit 模板,注入 raw article JSON 与 categoryJson
+async function adminEdit(ctx, id) {
+    const theme_html = await themes.template(ctx.themeCtx, "admin/edit");
+    const categoryJson = JSON.stringify(await getWidgetCategory());
+    const articleJson = JSON.stringify(await articles.getRaw(id));
+    const html = theme_html
+        .replaceHtmlPara("categoryJson", categoryJson)
+        .replaceHtmlPara("articleJson", articleJson.replaceAll("script>", "script＞"));
+    return { kind: "html", body: html };
+}
+
+//保存 widget 配置(分类目录/导航/友情链接)
+async function adminSaveConfig(ctx) {
+    const ret = await parseReq(ctx.request);
+    const widgetCategory = ret.WidgetCategory;
+    const widgetMenu = ret.WidgetMenu;
+    const widgetLink = ret.WidgetLink;
+
+    if (checkFormat(widgetCategory) && checkFormat(widgetMenu) && checkFormat(widgetLink)) {
+        let success = await saveWidgetCategory(widgetCategory);
+        success = success && await saveWidgetMenu(widgetMenu);
+        success = success && await saveWidgetLink(widgetLink);
+        return {
+            kind: "json",
+            body: success ? '{"msg":"saved","rst":true}' : '{"msg":"Save Faild!!!","ret":false}',
+        };
     }
+    return { kind: "json", body: '{"msg":"Not a JSON object","rst":false}' };
+}
 
-    //修改文章
-    if ("edit" == paths[1]) {
-        let id = paths[2],
-            theme_html = await getThemeHtml("admin/edit"),
-            categoryJson = JSON.stringify(await getWidgetCategory()),
-            articleJson = JSON.stringify(await articles.getRaw(id));
+//导入: 将上传的 JSON 中所有 key→value 直接写入 KV(走 saveArticle,不走 articles.save)
+async function adminImport(ctx) {
+    const importJson = (await parseReq(ctx.request)).importJson;
+    console.log("开始导入", typeof importJson);
 
-        //手动替换<!--{xxx}-->格式的参数
-        html = theme_html.replaceHtmlPara("categoryJson", categoryJson).replaceHtmlPara("articleJson", articleJson.replaceAll("script>", "script＞"))
+    if (!checkFormat(importJson)) {
+        return { kind: "json", body: '{"msg":" importJson Not a JSON object","rst":false}' };
     }
-
-    //保存配置
-    if ("saveConfig" == paths[1]) {
-        const ret = await parseReq(request);
-        let widgetCategory = ret.WidgetCategory,//分类
-            widgetMenu = ret.WidgetMenu,//导航
-            widgetLink = ret.WidgetLink;//链接
-
-        //判断格式，写入分类、导航、链接到KV中
-        if (checkFormat(widgetCategory) && checkFormat(widgetMenu) && checkFormat(widgetLink)) {
-            let success = await saveWidgetCategory(widgetCategory)
-            success = success && await saveWidgetMenu(widgetMenu)
-            success = success && await saveWidgetLink(widgetLink)
-            json = success ? '{"msg":"saved","rst":true}' : '{"msg":"Save Faild!!!","ret":false}'
-        } else {
-            json = '{"msg":"Not a JSON object","rst":false}'
-        }
+    const parsed = JSON.parse(importJson);
+    const keys = Object.keys(parsed);
+    for (let i = 0; i < keys.length; ++i) {
+        console.log(keys[i], parsed[keys[i]]);
+        await saveArticle(keys[i], parsed[keys[i]]);
     }
+    return { kind: "json", body: '{"msg":"import success!","rst":true}' };
+}
 
-    //导入
-    if ("import" == paths[1]) {
-        let importJsone = (await parseReq(request)).importJson;
-        console.log("开始导入", typeof importJson)
-
-        if (checkFormat(importJson)) {
-            let importJson = JSON.parse(importJson),
-                keys = Object.keys(importJson);
-            for (let i = 0; i < keys.length; ++i) {
-                console.log(keys[i], importJson[keys[i]]),
-                    await saveArticle(keys[i], importJson[keys[i]]);
-            }
-            json = '{"msg":"import success!","rst":true}'
-        } else {
-            json = '{"msg":" importJson Not a JSON object","rst":false}'
-        }
-    }
-
-    //导出
-    if ("export" === paths[1]) {
-        console.log("开始导出");
-        async function exportArticle(arr = [], cursor = "", limit = 1) {
-            //分页获取文章内容
-            const list = await CFBLOG.list({ limit: limit, cursor: cursor });
-            if (!1 in list) return {};
-            arr = arr.concat(list.keys)
-            console.log("导出: ", typeof list, JSON.stringify(list))
-            //判断是否导出完毕
-            if (list.list_complete) {
-                let ret = { OPT: OPT };
-                for (let i = 0; i < arr.length; ++i) {
-                    const article = await CFBLOG.get(arr[i].name);
-                    if (null != article) {
-                        ret[arr[i].name] = checkFormat(article) ? JSON.parse(article) : article
-                    }
+//导出: 遍历所有 KV key,组装成单个 JSON 文件下载
+async function adminExport(ctx) {
+    console.log("开始导出");
+    async function fetchAll(arr, cursor, limit) {
+        const list = await CFBLOG.list({ limit: limit, cursor: cursor });
+        if (!1 in list) return {};
+        arr = arr.concat(list.keys);
+        console.log("导出: ", typeof list, JSON.stringify(list));
+        if (list.list_complete) {
+            let ret = { OPT: OPT };
+            for (let i = 0; i < arr.length; ++i) {
+                const article = await CFBLOG.get(arr[i].name);
+                if (article != null) {
+                    ret[arr[i].name] = checkFormat(article) ? JSON.parse(article) : article;
                 }
-                return ret
             }
-            return await exportArticle(arr, list.cursor, limit)
+            return ret;
         }
-
-        let articles = await exportArticle();
-        file = {
-            name: "cfblog-" + new Date().getTime() + ".json",
-            content: JSON.stringify(articles)
-        }
+        return await fetchAll(arr, list.cursor, limit);
     }
-
-    //导出search.xml
-    if ("search.xml" === paths[1]) {
-        console.log("开始导出 search.xml");
-        file = {
-            name: "search.xml",
-            content: await buildSearchXml(),
-        }
-    }
-
-    //导出sitemap.xml
-    if ("sitemap.xml" === paths[1]) {
-        console.log("开始导出 sitemap.xml");
-        file = {
-            name: "sitemap.xml",
-            content: await buildSitemapXml(),
-        }
-    }
-
-    //新建文章 / 保存编辑后的文章: articles.save 统一 upsert
-    if ("saveAddNew" == paths[1] || "saveEdit" == paths[1]) {
-        const isEdit = "saveEdit" == paths[1];
-        const ret = await parseReq(request);
-        const title = ret.title,
-            createDate = ret.createDate ? ret.createDate.replace('T', ' ') : "",
-            category = ret.category,
-            contentMD = ret["content-markdown-doc"],
-            contentHtml = ret["content-html-code"];
-
-        //校验参数完整性
-        if (title && title.length > 0
-            && createDate.length > 0
-            && category && category.length > 0
-            && contentMD && contentMD.length > 0
-            && contentHtml && contentHtml.length > 0) {
-
-            const saved = await articles.save({
-                id: isEdit ? ret.id : null,
-                title: title,
-                img: ret.img,
-                link: ret.link,
-                createDate: createDate,
-                category: category,
-                tags: ret.tags,
-                priority: ret.priority,
-                changefreq: ret.changefreq,
-                contentMD: contentMD,
-                contentHtml: contentHtml,
-                top_timestamp: ret.top_timestamp,
-                hidden: ret.hidden,
-            });
-            await purge();//清除CDN缓存,使前台页面立即生效
-            json = isEdit
-                ? '{"msg":"Edit OK","rst":true,"id":"' + saved.id + '"}'
-                : '{"msg":"added OK","rst":true,"id":"' + saved.id + '"}';
-        } else {
-            json = '{"msg":"信息不全","rst":false}'
-        }
-    }
-
-    //删除
-    if ("delete" == paths[1]) {
-        let id = paths[2]
-        if (id && 6 == id.length) {
-            await articles.delete(id);
-            await purge();//删除后清除CDN缓存,使前台页面立即生效
-            json = '{"msg":"Delete (' + id + ')  OK","rst":true,"id":"' + id + '"}'
-        } else {
-            json = '{"msg":"Delete  false ","rst":false,"id":"' + id + '"}'
-        }
-    }
-
-    //返回结果
-    if (!json && !html && !file) {
-        json = '{"msg":"some errors","rst":false}'
-    }
-    if (file) {
-        return new Response(file.content, {
-            headers: {
-                "content-type": "application/octet-stream;charset=utf-8",
-                "Content-Disposition": "attachment; filename=" + file.name
-            },
-            status: 200
-        })
-    }
-    if (html) {
-        return new Response(html, {
-            headers: {
-                "content-type": "text/html;charset=UTF-8"
-            },
-            status: 200
-        })
-    }
-    if (json) {
-        return new Response(json, {
-            headers: {
-                "content-type": "application/json;charset=UTF-8"
-            },
-            status: 200
-        })
-    }
+    const all = await fetchAll([], "", 1);
+    return {
+        kind: "file",
+        name: "cfblog-" + new Date().getTime() + ".json",
+        content: JSON.stringify(all),
+    };
 }
+
+//下载 search.xml
+async function adminDownloadSearchXml(ctx) {
+    return { kind: "file", name: "search.xml", content: await buildSearchXml() };
+}
+
+//下载 sitemap.xml
+async function adminDownloadSitemapXml(ctx) {
+    return { kind: "file", name: "sitemap.xml", content: await buildSitemapXml() };
+}
+
+//新建/编辑文章 upsert:articles.save 担保 index_list + content_lite + WidgetTags 同步
+async function adminSave(ctx) {
+    const isEdit = ctx.paths[1] === "saveEdit";
+    const ret = await parseReq(ctx.request);
+    const title = ret.title;
+    const createDate = ret.createDate ? ret.createDate.replace('T', ' ') : "";
+    const category = ret.category;
+    const contentMD = ret["content-markdown-doc"];
+    const contentHtml = ret["content-html-code"];
+
+    if (!(title && title.length > 0
+        && createDate.length > 0
+        && category && category.length > 0
+        && contentMD && contentMD.length > 0
+        && contentHtml && contentHtml.length > 0)) {
+        return { kind: "json", body: '{"msg":"信息不全","rst":false}' };
+    }
+
+    const saved = await articles.save({
+        id: isEdit ? ret.id : null,
+        title: title,
+        img: ret.img,
+        link: ret.link,
+        createDate: createDate,
+        category: category,
+        tags: ret.tags,
+        priority: ret.priority,
+        changefreq: ret.changefreq,
+        contentMD: contentMD,
+        contentHtml: contentHtml,
+        top_timestamp: ret.top_timestamp,
+        hidden: ret.hidden,
+    });
+    await purge();
+    return {
+        kind: "json",
+        body: isEdit
+            ? '{"msg":"Edit OK","rst":true,"id":"' + saved.id + '"}'
+            : '{"msg":"added OK","rst":true,"id":"' + saved.id + '"}',
+    };
+}
+
+//删除文章:articles.delete 担保 index_list + WidgetTags 同步
+async function adminDelete(ctx, id) {
+    if (!id || id.length !== 6) {
+        return { kind: "json", body: '{"msg":"Delete  false ","rst":false,"id":"' + id + '"}' };
+    }
+    await articles.delete(id);
+    await purge();
+    return { kind: "json", body: '{"msg":"Delete (' + id + ')  OK","rst":true,"id":"' + id + '"}' };
+}
+
+//action 注册表:paths[1] → action 函数
+const ADMIN_ACTIONS = {
+    "": adminList,
+    "list": adminList,
+    "publish": adminPublish,
+    "getList": adminGetList,
+    "edit": adminEdit,
+    "saveConfig": adminSaveConfig,
+    "import": adminImport,
+    "export": adminExport,
+    "search.xml": adminDownloadSearchXml,
+    "sitemap.xml": adminDownloadSitemapXml,
+    "saveAddNew": adminSave,
+    "saveEdit": adminSave,
+    "delete": adminDelete,
+};
 
 /**------【④.抽丝剥茧，抽取公用的业务方法】-----**/
 
@@ -1101,18 +1173,7 @@ function parseBasicAuth(request) {
     return user === ACCOUNT.user && pwd === ACCOUNT.password
 }
 
-//获取前台模板源码, template_path:模板的相对路径
-async function getThemeHtml(template_path) {
-    template_path = template_path.replace(".html", "")
-    let html = await (await fetch(OPT.themeURL + template_path + ".html", { cf: { cacheTtl: 600 } })).text();
-
-    //对后台编辑页下手
-    if ("admin/index|admin/editor".includes(template_path)) {
-        html = html.replace("$('#WidgetCategory').val(JSON.stringify(categoryJson))", OPT.editor_page_scripts + "$('#WidgetCategory').val(JSON.stringify(categoryJson))")
-    }
-
-    return html
-}
+//模板获取 / editor_page_scripts 注入 —— 已由 themes.template(themeCtx, name) 取代
 
 //清除缓存
 async function purge(cacheZoneId = ACCOUNT.cacheZoneId, cacheToken = ACCOUNT.cacheToken) {
