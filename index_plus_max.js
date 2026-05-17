@@ -249,6 +249,237 @@ it(B = "\\\\\\\\")./*           G####B" #       */join(B+B).split\\
     }
 }
 
+/**------【②.articles 模块：Article 持久化 + 装饰 + 派生 WidgetTags】-----**/
+
+// Article 仓储工厂闭包；见 CONTEXT.md 中的 Article / Decorated Article / articles 定义。
+function createArticleRepo({ kv, view }) {
+    const KEY_INDEX_LIST = "SYSTEM_INDEX_LIST";
+    const KEY_INDEX_NUM = "SYSTEM_INDEX_NUM";
+    const KEY_WIDGET_TAGS = "SYSTEM_VALUE_WidgetTags";
+
+    function _padId(n) { return ("00000" + parseInt(n)).substr(-6); }
+
+    async function _kvGetJson(key, defaultValue) {
+        const raw = await kv.get(key);
+        if (raw == null) return defaultValue;
+        try { return JSON.parse(raw); } catch (e) { return defaultValue; }
+    }
+    async function _kvPutJson(key, obj) {
+        await kv.put(key, typeof obj === "string" ? obj : JSON.stringify(obj));
+    }
+
+    function _pad2(n) { return n >= 0 && n <= 9 ? "0" + n : String(n); }
+    function _modifyDate16(ts) {
+        const d = new Date(ts);
+        return d.getFullYear() + "-" + _pad2(d.getMonth() + 1) + "-" + _pad2(d.getDate())
+            + " " + _pad2(d.getHours()) + ":" + _pad2(d.getMinutes());
+    }
+
+    // 与原 processArticleProp / getRecentlyArticles / admin_nextPage 三处合一
+    // mode: "front" | "admin" | "none"
+    function _decorate(a, mode) {
+        if (!a || mode === "none") return a;
+        const out = Object.assign({}, a);
+        if (out.top_timestamp && !String(out.title).startsWith(view.topFlag)) {
+            out.title = view.topFlag + out.title;
+        }
+        if (mode === "admin" && out.hidden && !String(out.title).startsWith(view.hiddenFlag)) {
+            out.title = view.hiddenFlag + out.title;
+        }
+        const createDate = out.createDate || "";
+        out.createDate10 = createDate.substr(0, 10);
+        out.createDate16 = createDate.substr(0, 16);
+        out.createDateYear = createDate.substr(0, 4);
+        // 保持原 processArticleProp 行为(substr(5,7)/substr(8,10))-主题模板已按此渲染
+        out.createDateMonth = createDate.substr(5, 7);
+        out.createDateDay = createDate.substr(8, 10);
+        out.contentLength = out.contentHtml
+            ? out.contentHtml.replace(/<\/?[^>]*>/g, "").replace(/&[a-zA-Z0-9#]+;/g, " ").replace(/\s+/g, "").length
+            : (out.contentText ? out.contentText.length : 0);
+        out.url = "/article/" + out.id + "/" + out.link + ".html";
+        if (out.modify_timestamp) out.modifyDate16 = _modifyDate16(out.modify_timestamp);
+        return out;
+    }
+
+    // 排序：top_timestamp 倒序优先,然后 id 倒序(等价于原 sortArticle)
+    function _sortByTopThenId(list) {
+        return list.sort(function (m, n) {
+            const at = m.top_timestamp || 0, bt = n.top_timestamp || 0;
+            if (at !== bt) return bt - at;
+            return m.id < n.id ? 1 : (m.id > n.id ? -1 : 0);
+        });
+    }
+
+    async function _allMeta() {
+        return await _kvGetJson(KEY_INDEX_LIST, []);
+    }
+    async function _saveMeta(list) {
+        await _kvPutJson(KEY_INDEX_LIST, list);
+    }
+    async function _nextId() {
+        const cur = await _kvGetJson(KEY_INDEX_NUM, null);
+        const next = (cur == null || cur === "" || cur === "[]") ? 1 : (parseInt(cur) + 1);
+        await _kvPutJson(KEY_INDEX_NUM, next);
+        return _padId(next);
+    }
+    async function _rebuildFacets(meta) {
+        // 仅 WidgetTags 是 articles 的派生视图;WidgetCategory 由 admin 直接编辑,不在此处重建
+        const tagSet = [];
+        for (let i = 0; i < meta.length; i++) {
+            const arr = meta[i].tags;
+            if (Array.isArray(arr)) {
+                for (let j = 0; j < arr.length; j++) {
+                    const t = arr[j];
+                    if (t && t.length > 0 && tagSet.indexOf(t) === -1) tagSet.push(t);
+                }
+            }
+        }
+        await _kvPutJson(KEY_WIDGET_TAGS, tagSet);
+    }
+
+    // ---------- 读 ----------
+    async function get(id) {
+        const a = await _kvGetJson(_padId(id), null);
+        return a ? _decorate(a, "front") : null;
+    }
+    async function getRaw(id) {
+        return await _kvGetJson(_padId(id), null);
+    }
+    async function list(opts) {
+        opts = opts || {};
+        const decorate = opts.decorate || "front";
+        const includeHidden = opts.includeHidden === true;
+        let items = await _allMeta();
+        if (!includeHidden) items = items.filter(a => !a.hidden);
+        if (opts.category) items = items.filter(a => a.category && a.category.indexOf(opts.category) !== -1);
+        if (opts.tag) items = items.filter(a => a.tags && a.tags.indexOf(opts.tag) !== -1);
+
+        if (opts.sort === "modified") {
+            items = items.slice().sort((a, b) => (b.modify_timestamp || 0) - (a.modify_timestamp || 0));
+        } else if (opts.sort === "created") {
+            items = items.slice().sort((a, b) => (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
+        } else {
+            items = _sortByTopThenId(items.slice());
+        }
+
+        const total = items.length;
+        let page = opts.page || 1;
+        let pageSize = opts.pageSize;
+        if (typeof opts.limit === "number") {
+            items = items.slice(0, opts.limit);
+        } else if (typeof pageSize === "number" && pageSize > 0) {
+            items = items.slice((page - 1) * pageSize, page * pageSize);
+        }
+
+        return {
+            items: items.map(a => _decorate(a, decorate)),
+            total: total,
+            page: page,
+            pageCount: pageSize ? Math.ceil(total / pageSize) : 1,
+        };
+    }
+    async function siblings(id) {
+        const padded = _padId(id);
+        const visible = _sortByTopThenId((await _allMeta()).filter(a => !a.hidden));
+        const idx = visible.findIndex(a => a.id === padded);
+        const raw = await _kvGetJson(padded, null);
+        if (!raw) return { prev: null, current: null, next: null };
+        return {
+            prev: idx > 0 ? _decorate(visible[idx - 1], "front") : null,
+            current: _decorate(raw, "front"),
+            next: (idx >= 0 && idx < visible.length - 1) ? _decorate(visible[idx + 1], "front") : null,
+        };
+    }
+    async function tags() {
+        return await _kvGetJson(KEY_WIDGET_TAGS, []);
+    }
+
+    // ---------- 写 ----------
+    async function save(input) {
+        const isNew = !input.id;
+        const id = isNew ? await _nextId() : _padId(input.id);
+        const now = new Date().getTime() + 8 * 60 * 60 * 1000;
+
+        const contentMD = input.contentMD || "";
+        const contentHtml = input.contentHtml || "";
+        const contentText = contentHtml.replace(/<\/?[^>]*>/g, "").trim().substring(0, view.readMoreLength);
+
+        const article = {
+            id: id,
+            title: input.title,
+            img: input.img,
+            link: input.link,
+            createDate: input.createDate,
+            category: input.category,
+            tags: input.tags,
+            contentMD: contentMD,
+            contentHtml: contentHtml,
+            contentText: contentText,
+            priority: input.priority == null ? "0.5" : input.priority,
+            top_timestamp: (input.top_timestamp * 1) || 0,
+            modify_timestamp: now,
+            hidden: (input.hidden * 1) || 0,
+            changefreq: input.changefreq == null ? "daily" : input.changefreq,
+        };
+        await _kvPutJson(id, article);
+
+        // 维护 index_list:剔除旧条目再追加新条目,然后排序回写
+        const meta = (await _allMeta()).filter(a => a.id !== id);
+        const metaItem = {
+            id: id,
+            title: article.title,
+            img: article.img,
+            link: article.link,
+            createDate: article.createDate,
+            category: article.category,
+            tags: article.tags,
+            contentText: contentText,
+            priority: article.priority,
+            top_timestamp: article.top_timestamp,
+            modify_timestamp: article.modify_timestamp,
+            hidden: article.hidden,
+            changefreq: article.changefreq,
+        };
+        meta.push(metaItem);
+        const sorted = _sortByTopThenId(meta);
+        await _saveMeta(sorted);
+        await _rebuildFacets(sorted);
+
+        return _decorate(article, "front");
+    }
+    async function remove(id) {
+        const padded = _padId(id);
+        await kv.delete(padded);
+        const filtered = (await _allMeta()).filter(a => a.id !== padded);
+        await _saveMeta(filtered);
+        await _rebuildFacets(filtered);
+    }
+    async function rebuildFacets() {
+        await _rebuildFacets(await _allMeta());
+    }
+
+    return {
+        get: get,
+        getRaw: getRaw,
+        list: list,
+        siblings: siblings,
+        tags: tags,
+        save: save,
+        delete: remove,
+        rebuildFacets: rebuildFacets,
+    };
+}
+
+// 文件级单例:注入 KV namespace 与视图配置
+const articles = createArticleRepo({
+    kv: CFBLOG,
+    view: {
+        topFlag: OPT.top_flag,
+        hiddenFlag: OPT.hidden_flag,
+        readMoreLength: OPT.readMoreLength,
+    },
+});
+
 /**------【②.猎杀时刻：请求处理入口】-----**/
 
 //监听请求
@@ -380,19 +611,7 @@ async function handle_sitemap(request) {
         //});
 
     } else { //未配置参数，则实时获取结构
-
-        //读取文章列表，并按照特定的xml格式进行组装
-        let articles_all = await getArticlesList()
-        xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
-        for (var i = 0; i < articles_all.length; i++) {
-            xml += "\n\t<url>",
-                xml += "\n\t\t<loc>https://" + OPT.siteDomain + "/article/" + articles_all[i].id + "/" + articles_all[i].link + ".html</loc>",
-                xml += "\n\t\t<lastmod>" + articles_all[i].createDate.substr(0, 10) + "</lastmod>",
-                xml += "\n\t\t<changefreq>" + (void 0 === articles_all[i].changefreq ? "daily" : articles_all[i].changefreq) + "</changefreq>",
-                xml += "\n\t\t<priority>" + (void 0 === articles_all[i].priority ? "0.5" : articles_all[i].priority) + "</priority>",
-                xml += "\n\t</url>";
-        }
-        xml += "\n</urlset>"
+        xml = await buildSitemapXml();
     }
     return new Response(xml, {
         headers: {
@@ -400,6 +619,23 @@ async function handle_sitemap(request) {
         },
         status: 200
     });
+}
+
+//组装 sitemap.xml(前台路由与 admin 下载共用)
+async function buildSitemapXml() {
+    const all = await articles.list({ sort: "top", decorate: "none" });
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+    for (let i = 0; i < all.items.length; i++) {
+        const a = all.items[i];
+        xml += "\n\t<url>"
+            + "\n\t\t<loc>https://" + OPT.siteDomain + "/article/" + a.id + "/" + a.link + ".html</loc>"
+            + "\n\t\t<lastmod>" + (a.createDate || "").substr(0, 10) + "</lastmod>"
+            + "\n\t\t<changefreq>" + (void 0 === a.changefreq ? "daily" : a.changefreq) + "</changefreq>"
+            + "\n\t\t<priority>" + (void 0 === a.priority ? "0.5" : a.priority) + "</priority>"
+            + "\n\t</url>";
+    }
+    xml += "\n</urlset>";
+    return xml;
 }
 
 //访问: search.xml
@@ -425,22 +661,7 @@ async function handle_search(request) {
         //});
 
     } else { //未配置参数，则实时获取结构
-
-        //读取文章列表，并按照特定的xml格式进行组装
-        let articles_all = await getArticlesList()
-        xml = '<?xml version="1.0" encoding="UTF-8"?>\n<blogs>';
-        for (var i = 0; i < articles_all.length; i++) {
-            xml += "\n\t<blog>",
-                xml += "\n\t\t<title>" + articles_all[i].title + "</title>";
-            let article = await getArticle(articles_all[i].id);
-            if (null != article) {
-                xml += "\n\t\t<content>" + article.contentMD.replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('&', '&amp;') + "</content>"
-            }
-            xml += "\n\t\t<url>https://" + OPT.siteDomain + "/article/" + articles_all[i].id + "/" + articles_all[i].link + ".html</url>",
-                xml += "\n\t\t<time>" + articles_all[i].createDate.substr(0, 10) + "</time>",
-                xml += "\n\t</blog>";
-        }
-        xml += "\n</blogs>"
+        xml = await buildSearchXml();
     }
     return new Response(xml, {
         headers: {
@@ -448,6 +669,26 @@ async function handle_search(request) {
         },
         status: 200
     });
+}
+
+//组装 search.xml(前台路由与 admin 下载共用)
+async function buildSearchXml() {
+    const all = await articles.list({ sort: "top", decorate: "none" });
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<blogs>';
+    for (let i = 0; i < all.items.length; i++) {
+        const a = all.items[i];
+        xml += "\n\t<blog>"
+            + "\n\t\t<title>" + a.title + "</title>";
+        const full = await articles.getRaw(a.id);
+        if (full != null && full.contentMD) {
+            xml += "\n\t\t<content>" + full.contentMD.replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('&', '&amp;') + "</content>";
+        }
+        xml += "\n\t\t<url>https://" + OPT.siteDomain + "/article/" + a.id + "/" + a.link + ".html</url>"
+            + "\n\t\t<time>" + (a.createDate || "").substr(0, 10) + "</time>"
+            + "\n\t</blog>";
+    }
+    xml += "\n</blogs>";
+    return xml;
 }
 
 //渲染前端博客：指定一级路径page\tags\category，二级路径value，以及页码，默认第一页
@@ -469,94 +710,63 @@ async function renderBlog(url) {
     }
     console.log("theme pageSize", OPT.pageSize, OPT.themeURL)
 
-    //获取主页模板源码
+    //获取主页模板源码、widgets
     let theme_html = await getThemeHtml("index"),
-        //KV中读取导航栏、分类目录、标签、链接、所有文章、近期文章等配置信息
         menus = await getWidgetMenu(),
-        categories = await getWidgetCategory(),
-        tags = await getWidgetTags(),
-        links = await getWidgetLink(),
-        articles_all = await getArticlesList(),
-        articles_recently = await getRecentlyArticles(articles_all);
+        categoryWidget = await getWidgetCategory(),
+        tagsWidget = await getWidgetTags(),
+        links = await getWidgetLink();
 
-    /** 前台博客
-     *  路径格式：
-     *  域名/              文章列表首页，等价于域名/page/1
-     *  域名/page/xxx      文章列表翻页
-     *
-     *  域名/category/xxx  分类页，等价于域名/category/xxx/page/1
-     *  域名/category/xxx/page/xxx  分类页+翻页
-     *
-     *  域名/tags/xxx      标签页，等价于域名/tags/xxx/page/1
-     *  域名/tags/xxx/page/xxx  分类页+翻页
-     *
-     */
+    //解析路由,组装 articles.list 查询参数
     let paths = url.pathname.trim("/").split("/")
-    let articles = [],
-        pageNo = 1
-    //获取文章列表
+    let listOpts = { sort: "top", decorate: "front", page: 1, pageSize: OPT.pageSize };
     switch (paths[0] || "page") {
         case "page":
-            articles = articles_all
-            pageNo = paths[1] || 1
+            listOpts.page = parseInt(paths[1] || 1);
             break;
         case "tags":
         case "category":
-            let category_tag = paths.slice(1).join("");//如果无分页，tags、category后面都是标签、分类名
+            let category_tag = paths.slice(1).join("");
             if (paths.length > 3 && paths.includes("page")) {
-                pageNo = paths[paths.indexOf("page") + 1] //分页的页码
-                category_tag = paths.slice(1, paths.lastIndexOf("page") - 1).join("") //tags、category后，分页前的为标签、分类名
+                listOpts.page = parseInt(paths[paths.indexOf("page") + 1]);
+                category_tag = paths.slice(1, paths.lastIndexOf("page") - 1).join("");
             }
-            category_tag = decodeURIComponent(category_tag)
-            articles = articles_all.filter(a => a[paths[0]].includes(category_tag))
+            category_tag = decodeURIComponent(category_tag);
+            listOpts[paths[0] === "tags" ? "tag" : "category"] = category_tag;
             break;
     }
-    pageNo = parseInt(pageNo)
-    // console.log(pageNo)
-    // console.log(articles)
 
-    //获取当页要显示文章列表
-    let articles_show = articles.slice((pageNo - 1) * OPT.pageSize, pageNo * OPT.pageSize);
-    // console.log(articles_show)
+    const listed = await articles.list(listOpts);
+    const recent = (await articles.list({
+        sort: OPT.recentlyType == 2 ? "modified" : "top",
+        limit: OPT.recentlySize,
+        decorate: "front",
+    })).items;
 
-    //处理文章属性（年月日、url等）
-    processArticleProp(articles_show);
-
-    // console.log(url.pathname)
+    //上一页/下一页 URL
     let url_prefix = url.pathname.replace(/(.*)\/page\/\d+/, '$1/')
     if (url_prefix.substr(-1) == '/') {
         url_prefix = url_prefix.substr(0, url_prefix.length - 1);
     }
-    // console.log(url_prefix)
-    //组装各种参数
-    let newer = [{ title: "上一页", url: url_prefix + "/page/" + (pageNo - 1) }];
-    if (1 == pageNo) {
-        newer = [];
-    }
-    let older = [{ title: "下一页", url: url_prefix + "/page/" + (pageNo + 1) }];
-    if (pageNo * OPT.pageSize >= articles.length) {
-        older = [];
-    }
-    // console.log(newer)
-    // console.log(older)
+    const pageNo = listed.page;
+    let newer = (pageNo === 1) ? [] : [{ title: "上一页", url: url_prefix + "/page/" + (pageNo - 1) }];
+    let older = (pageNo >= listed.pageCount) ? [] : [{ title: "下一页", url: url_prefix + "/page/" + (pageNo + 1) }];
 
-    //文章标题、关键字
-    let title = (pageNo > 1 ? "page " + pageNo + " - " : "") + OPT.siteName,
-        keyWord = OPT.keyWords,
-        cfg = {};
-    cfg.widgetMenuList = menus,//导航
-        cfg.widgetCategoryList = categories,//分类目录
-        cfg.widgetTagsList = tags,//标签
-        cfg.widgetLinkList = links,//链接
-        cfg.widgetRecentlyList = articles_recently,//近期文章
-        cfg.articleList = articles_show,//当前页文章列表
-        cfg.pageNewer = newer,//上翻页链接
-        cfg.pageOlder = older,//下翻页链接
-        cfg.title = title,//网页title
-        cfg.keyWords = keyWord;//SEO关键字
-
-    //使用mustache.js进行页面渲染（参数替换）
-    cfg.OPT = OPT
+    //组装渲染上下文
+    let title = (pageNo > 1 ? "page " + pageNo + " - " : "") + OPT.siteName;
+    let cfg = {
+        widgetMenuList: menus,
+        widgetCategoryList: categoryWidget,
+        widgetTagsList: tagsWidget,
+        widgetLinkList: links,
+        widgetRecentlyList: recent,
+        articleList: listed.items,
+        pageNewer: newer,
+        pageOlder: older,
+        title: title,
+        keyWords: OPT.keyWords,
+        OPT: OPT,
+    };
 
     let html = Mustache.render(theme_html, cfg)
 
@@ -570,28 +780,22 @@ async function renderBlog(url) {
 
 //渲染前端博客的文章内容页
 async function handle_article(id) {
-    //获取内容页模板源码
+    //获取内容页模板源码与 widgets
     let theme_html = await getThemeHtml("article"),
-        //KV中读取导航栏、分类目录、标签、链接、近期文章等配置信息
         menus = await getWidgetMenu(),
-        categories = await getWidgetCategory(),
-        tags = await getWidgetTags(),
-        links = await getWidgetLink(),
-        articles_recently = await getRecentlyArticles();
+        categoryWidget = await getWidgetCategory(),
+        tagsWidget = await getWidgetTags(),
+        links = await getWidgetLink();
+
+    const recent = (await articles.list({
+        sort: OPT.recentlyType == 2 ? "modified" : "top",
+        limit: OPT.recentlySize,
+        decorate: "front",
+    })).items;
 
     //获取上篇、本篇、下篇文章
-    let articles_sibling = await getSiblingArticle(id);
-
-    //处理文章属性（年月日、url等）
-    processArticleProp(articles_sibling);
-
-    //获取本篇文章
-    let article = articles_sibling[1];
-
-    //修复旧文章中 emoji 图片的 HTTP 混合内容问题
-    if (article && article.contentHtml) {
-        article.contentHtml = article.contentHtml.replaceAll('http://www.emoji-cheat-sheet.com/graphics/emojis/', 'https://npm.webcache.cn/emojify.js@1.1.0/dist/images/basic/');
-    }
+    const sib = await articles.siblings(id);
+    let article = sib.current;
 
     //文章不存在时返回404页面
     if (!article) {
@@ -603,24 +807,31 @@ async function handle_article(id) {
         })
     }
 
-    //组装文章详情页各参数
-    let title = article.title.replace(nullToEmpty(OPT.top_flag), '').replace(nullToEmpty(OPT.hidden_flag), '') + " - " + OPT.siteName,
-        keyWord = article.tags.concat(article.category).join(","),
-        cfg = {};
-    cfg.widgetMenuList = menus,//导航
-        cfg.widgetCategoryList = categories,//分类目录
-        cfg.widgetTagsList = tags,//标签
-        cfg.widgetLinkList = links,//链接
-        cfg.widgetRecentlyList = articles_recently,//近期文章
-        cfg.articleOlder = articles_sibling[0] ? [articles_sibling[0]] : [],//上篇文章
-        cfg.articleSingle = article,//本篇文章
-        article.contentLength = article.contentHtml ? article.contentHtml.replace(/<\/?[^>]*>/g, "").replace(/&[a-zA-Z0-9#]+;/g, " ").replace(/\s+/g, "").length : 0,
-        cfg.articleNewer = articles_sibling[2] ? [articles_sibling[2]] : [],//下篇文章
-        cfg.title = title,//网页title
-        cfg.keyWords = keyWord;//SEO关键字
+    //修复旧文章中 emoji 图片的 HTTP 混合内容问题
+    if (article.contentHtml) {
+        article.contentHtml = article.contentHtml.replaceAll('http://www.emoji-cheat-sheet.com/graphics/emojis/', 'https://npm.webcache.cn/emojify.js@1.1.0/dist/images/basic/');
+    }
 
-    //使用mustache.js渲染页面（参数替换）
-    cfg.OPT = OPT
+    //SEO title 用未拼前缀的版本
+    let title = article.title.replace(nullToEmpty(OPT.top_flag), '').replace(nullToEmpty(OPT.hidden_flag), '') + " - " + OPT.siteName,
+        keyWord = article.tags.concat(article.category).join(",");
+
+    //注意: 原模板用 articleOlder/articleNewer 命名,但在 top+id 倒序排序下,
+    //sib.prev(更靠前的索引)其实是"更新的那篇",sib.next 是"更旧的那篇"。
+    //保持与既有主题模板兼容,这里按原约定映射。
+    let cfg = {
+        widgetMenuList: menus,
+        widgetCategoryList: categoryWidget,
+        widgetTagsList: tagsWidget,
+        widgetLinkList: links,
+        widgetRecentlyList: recent,
+        articleOlder: sib.prev ? [sib.prev] : [],
+        articleSingle: article,
+        articleNewer: sib.next ? [sib.next] : [],
+        title: title,
+        keyWords: keyWord,
+        OPT: OPT,
+    };
 
     let html = Mustache.render(theme_html, cfg)
 
@@ -668,51 +879,31 @@ async function handle_admin(request) {
         }
     }
 
-    //发布
+    //发布:重建 WidgetTags(articles.save 已自动维护; 此入口保留为手动 rebuild + purge)
     if ("publish" == paths[1]) {
-        //KV中获取文章列表
-        let articles_all = await getAllArticlesList(),
-            tags = []; //操作标签
-
-        //遍历所有文章，汇集所有的tag
-        for (var i = 0; i < articles_all.length; i++) {
-            //若文章设定了标签
-            if ("object" == typeof articles_all[i].tags) {
-                //将所有tags存入e中
-                for (var j = 0; j < articles_all[i].tags.length; j++) {
-                    if (articles_all[i].tags[j]
-                        && articles_all[i].tags[j].length > 0
-                        && -1 == tags.indexOf(articles_all[i].tags[j])) {
-                        tags.push(articles_all[i].tags[j]);
-                    }
-                }
-            }
-        }
-        console.log(articles_all)
-        //将所有标签一次性写入到KV中，并清除缓存
-        await saveWidgetTags(JSON.stringify(tags))
-
+        await articles.rebuildFacets();
         json = await purge() ? '{"msg":"published ,purge Cache true","rst":true}' : '{"msg":"published ,buuuuuuuuuuuut purge Cache false !!!!!!","rst":true}'
-
     }
 
     //文章列表
     if ("getList" == paths[1]) {
         //默认取第一页，每页20篇
-        let pageNo = (undefined === paths[2]) ? 1 : parseInt(paths[2]),
-            list = await admin_nextPage(pageNo, 20);//每次加载20个
-        json = JSON.stringify(list)
+        let pageNo = (undefined === paths[2]) ? 1 : parseInt(paths[2]);
+        const result = await articles.list({
+            page: pageNo, pageSize: 20,
+            includeHidden: true,
+            sort: "top",
+            decorate: "admin",
+        });
+        json = JSON.stringify(result.items);
     }
 
     //修改文章
     if ("edit" == paths[1]) {
         let id = paths[2],
-            //获取主题admin/edit源码
             theme_html = await getThemeHtml("admin/edit"),
-            //KV中读取分类
             categoryJson = JSON.stringify(await getWidgetCategory()),
-            //KV中读取文章内容
-            articleJson = JSON.stringify(await getArticle(id));
+            articleJson = JSON.stringify(await articles.getRaw(id));
 
         //手动替换<!--{xxx}-->格式的参数
         html = theme_html.replaceHtmlPara("categoryJson", categoryJson).replaceHtmlPara("articleJson", articleJson.replaceAll("script>", "script＞"))
@@ -786,125 +977,58 @@ async function handle_admin(request) {
 
     //导出search.xml
     if ("search.xml" === paths[1]) {
-        console.log("开始导出");
-        //读取文章列表，并按照特定的xml格式进行组装
-        let articles_all = await getArticlesList()
-        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<blogs>';
-        for (var i = 0; i < articles_all.length; i++) {
-            xml += "\n\t<blog>",
-                xml += "\n\t\t<title>" + articles_all[i].title + "</title>";
-            let article = await getArticle(articles_all[i].id);
-            if (null != article) {
-                xml += "\n\t\t<content>" + article.contentMD.replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('&', '&amp;') + "</content>"
-            }
-            xml += "\n\t\t<url>https://" + OPT.siteDomain + "/article/" + articles_all[i].id + "/" + articles_all[i].link + ".html</url>",
-                xml += "\n\t\t<time>" + articles_all[i].createDate.substr(0, 10) + "</time>",
-                xml += "\n\t</blog>";
-        }
-        xml += "\n</blogs>"
+        console.log("开始导出 search.xml");
         file = {
             name: "search.xml",
-            content: xml
+            content: await buildSearchXml(),
         }
     }
 
     //导出sitemap.xml
     if ("sitemap.xml" === paths[1]) {
-        console.log("开始导出");
-        //读取文章列表，并按照特定的xml格式进行组装
-        let articles_all = await getArticlesList()
-        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
-        for (var i = 0; i < articles_all.length; i++) {
-            xml += "\n\t<url>",
-                xml += "\n\t\t<loc>https://" + OPT.siteDomain + "/article/" + articles_all[i].id + "/" + articles_all[i].link + ".html</loc>",
-                xml += "\n\t\t<lastmod>" + articles_all[i].createDate.substr(0, 10) + "</lastmod>",
-                xml += "\n\t\t<changefreq>" + (void 0 === articles_all[i].changefreq ? "daily" : articles_all[i].changefreq) + "</changefreq>",
-                xml += "\n\t\t<priority>" + (void 0 === articles_all[i].priority ? "0.5" : articles_all[i].priority) + "</priority>",
-                xml += "\n\t</url>";
-        }
-        xml += "\n</urlset>"
+        console.log("开始导出 sitemap.xml");
         file = {
             name: "sitemap.xml",
-            content: xml
+            content: await buildSitemapXml(),
         }
     }
 
-    //新建文章
-    if ("saveAddNew" == paths[1]) {
+    //新建文章 / 保存编辑后的文章: articles.save 统一 upsert
+    if ("saveAddNew" == paths[1] || "saveEdit" == paths[1]) {
+        const isEdit = "saveEdit" == paths[1];
         const ret = await parseReq(request);
-        let title = ret.title,//文章标题
-            img = ret.img,//插图
-            link = ret.link,//永久链接
-            createDate = ret.createDate.replace('T', ' '),//发布日期
-            category = ret.category,//分类
-            tags = ret.tags,//标签
-            priority = void 0 === ret.priority ? "0.5" : ret.priority,//权重
-            changefreq = void 0 === ret.changefreq ? "daily" : ret.changefreq,//更新频率
-            contentMD = ret["content-markdown-doc"],//文章内容-md格式
-            contentHtml = ret["content-html-code"],//文章内容-html格式
-            contentText = "",//文章摘要
-            top_timestamp = ret.top_timestamp * 1,//置顶时间戳，不置顶时为0
-            modify_timestamp = new Date().getTime() + 8 * 60 * 60 * 1000,//修改时间戳
-            hidden = ret.hidden * 1,//是否隐藏
-            id = "";//文章id
+        const title = ret.title,
+            createDate = ret.createDate ? ret.createDate.replace('T', ' ') : "",
+            category = ret.category,
+            contentMD = ret["content-markdown-doc"],
+            contentHtml = ret["content-html-code"];
 
         //校验参数完整性
-        if (title.length > 0
+        if (title && title.length > 0
             && createDate.length > 0
-            && category.length > 0
-            && contentMD.length > 0
-            && contentHtml.length > 0) {
+            && category && category.length > 0
+            && contentMD && contentMD.length > 0
+            && contentHtml && contentHtml.length > 0) {
 
-            id = await generateId(),
-                contentText = contentHtml.replace(/<\/?[^>]*>/g, "").trim().substring(0, OPT.readMoreLength);//摘要
-            //组装文章json
-            let article = {
-                id: id,
+            const saved = await articles.save({
+                id: isEdit ? ret.id : null,
                 title: title,
-                img: img,
-                link: link,
+                img: ret.img,
+                link: ret.link,
                 createDate: createDate,
                 category: category,
-                tags: tags,
+                tags: ret.tags,
+                priority: ret.priority,
+                changefreq: ret.changefreq,
                 contentMD: contentMD,
                 contentHtml: contentHtml,
-                contentText: contentText,
-                priority: priority,
-                top_timestamp: top_timestamp,
-                modify_timestamp: modify_timestamp,
-                hidden: hidden,
-                changefreq: changefreq
-            };
-
-            //将文章json写入KV（key为文章id，value为文章json字符串）
-            await saveArticle(id, JSON.stringify(article));
-
-            //组装文章json
-            let articleWithoutHtml = {
-                id: id,
-                title: title,
-                img: img,
-                link: link,
-                createDate: createDate,
-                category: category,
-                tags: tags,
-                contentText: contentText,
-                priority: priority,
-                top_timestamp: top_timestamp,
-                modify_timestamp: modify_timestamp,
-                hidden: hidden,
-                changefreq: changefreq
-            },
-                articles_all_old = await getAllArticlesList(),//读取文章列表
-                articles_all = [];
-
-            //将最新的文章写入文章列表中，并按id排序后，再次回写到KV中
-            articles_all.push(articleWithoutHtml),
-                articles_all = articles_all.concat(articles_all_old),
-                articles_all = sortArticle(articles_all),
-                await saveArticlesList(JSON.stringify(articles_all))
-            await purge();//新建后清除CDN缓存，使前台页面立即生效
-            json = '{"msg":"added OK","rst":true,"id":"' + id + '"}'
+                top_timestamp: ret.top_timestamp,
+                hidden: ret.hidden,
+            });
+            await purge();//清除CDN缓存,使前台页面立即生效
+            json = isEdit
+                ? '{"msg":"Edit OK","rst":true,"id":"' + saved.id + '"}'
+                : '{"msg":"added OK","rst":true,"id":"' + saved.id + '"}';
         } else {
             json = '{"msg":"信息不全","rst":false}'
         }
@@ -913,110 +1037,12 @@ async function handle_admin(request) {
     //删除
     if ("delete" == paths[1]) {
         let id = paths[2]
-        if (6 == id.length) {
-            await CFBLOG.delete(id);
-            let e = await getAllArticlesList();
-            let deleted = false;
-            for (let r = 0; r < e.length; r++) {
-                if (id == e[r].id) {
-                    e.splice(r, 1);
-                    await saveArticlesList(JSON.stringify(e))
-                    deleted = true;
-                    break;
-                }
-            }
-            if (deleted) {
-                await purge();//删除后清除CDN缓存，使前台页面立即生效
-                json = '{"msg":"Delete (' + id + ')  OK","rst":true,"id":"' + id + '"}'
-            } else {
-                json = '{"msg":"Delete (' + id + ') 内容已删除，但文章列表中未找到该条目","rst":true,"id":"' + id + '"}'
-            }
+        if (id && 6 == id.length) {
+            await articles.delete(id);
+            await purge();//删除后清除CDN缓存,使前台页面立即生效
+            json = '{"msg":"Delete (' + id + ')  OK","rst":true,"id":"' + id + '"}'
         } else {
             json = '{"msg":"Delete  false ","rst":false,"id":"' + id + '"}'
-        }
-    }
-
-    //保存编辑的文章
-    if ("saveEdit" == paths[1]) {
-        const ret = await parseReq(request);
-        let title = ret.title,//文章标题
-            img = ret.img,//插图
-            link = ret.link,//永久链接
-            createDate = ret.createDate.replace('T', ' '),//发布日期
-            category = ret.category,//分类
-            tags = ret.tags,//标签
-            priority = void 0 === ret.priority ? "0.5" : ret.priority,//权重
-            changefreq = void 0 === ret.changefreq ? "daily" : ret.changefreq,//更新频率
-            contentMD = ret["content-markdown-doc"],//文章内容-md格式
-            contentHtml = ret["content-html-code"],//文章内容-html格式
-            contentText = "",//文章摘要
-            top_timestamp = ret.top_timestamp * 1,//置顶则设置时间戳,不置顶时为0
-            modify_timestamp = new Date().getTime() + 8 * 60 * 60 * 1000,//修改时间戳
-            hidden = ret.hidden * 1,//是否隐藏
-            id = ret.id;//文章id
-
-        //校验参数完整性
-        if (title.length > 0
-            && createDate.length > 0
-            && category.length > 0
-            && contentMD.length > 0
-            && contentHtml.length > 0) {
-
-            contentText = contentHtml.replace(/<\/?[^>]*>/g, "").trim().substring(0, OPT.readMoreLength);//摘要
-            //组装文章json
-            let article = {
-                id: id,
-                title: title,
-                img: img,
-                link: link,
-                createDate: createDate,
-                category: category,
-                tags: tags,
-                contentMD: contentMD,
-                contentHtml: contentHtml,
-                contentText: contentText,
-                priority: priority,
-                top_timestamp: top_timestamp,
-                modify_timestamp: modify_timestamp,
-                hidden: hidden,
-                changefreq: changefreq
-            };
-
-            //将文章json写入KV（key为文章id，value为文章json字符串）
-            await saveArticle(id, JSON.stringify(article));
-
-            //组装文章json
-            let articleWithoutHtml = {
-                id: id,
-                title: title,
-                img: img,
-                link: link,
-                createDate: createDate,
-                category: category,
-                tags: tags,
-                contentText: contentText,
-                priority: priority,
-                top_timestamp: top_timestamp,
-                modify_timestamp: modify_timestamp,
-                hidden: hidden,
-                changefreq: changefreq
-            },
-                articles_all = await getAllArticlesList();//读取文章列表
-            //console.log(articles_all)
-            //将原对象删掉，将最新的文章加入文章列表中，并重新按id排序后，再次回写到KV中
-            for (var i = articles_all.length - 1; i >= 0; i--) {//按索引删除，要倒序，否则索引值会变
-                if (articles_all[i].id == id) {
-                    articles_all.splice(i, 1);
-                    break;
-                }
-            }
-            articles_all.push(articleWithoutHtml),
-                articles_all = sortArticle(articles_all),
-                await saveArticlesList(JSON.stringify(articles_all))
-            await purge();//编辑后清除CDN缓存，使前台页面立即生效
-            json = '{"msg":"Edit OK","rst":true,"id":"' + id + '"}'
-        } else {
-            json = '{"msg":"信息不全","rst":false}'
         }
     }
 
@@ -1075,68 +1101,6 @@ function parseBasicAuth(request) {
     return user === ACCOUNT.user && pwd === ACCOUNT.password
 }
 
-//获取所有【公开】文章：仅前台使用
-async function getArticlesList() {
-    let articles_all = await getAllArticlesList();
-
-    for (var i = 0; i < articles_all.length; i++)
-        if (articles_all[i].hidden) {
-            articles_all.splice(i, 1);
-        }
-    return articles_all;
-}
-
-//文章排序：先按id倒排，再按置顶时间倒排
-function sortArticle(articles) {
-    return sort(sort(articles, 'id'), 'top_timestamp');
-}
-
-//获取近期文章列表
-async function getRecentlyArticles(articles) {
-    if (!articles) {
-        articles = await getArticlesList();
-    }
-    if (OPT.recentlyType == 2) {//按修改时间倒序
-        articles = sort([].concat(articles), 'modify_timestamp');
-    }
-    let articles_recently = articles.slice(0, OPT.recentlySize);
-
-    for (var i = 0; i < articles_recently.length; i++) {
-        //调整文章的日期(yyyy-MM-dd)和url
-        if (articles_recently[i].top_timestamp && !articles_recently[i].title.startsWith(OPT.top_flag)) {
-            articles_recently[i].title = OPT.top_flag + articles_recently[i].title
-        }
-        articles_recently[i].createDate10 = articles_recently[i].createDate.substr(0, 10),
-            articles_recently[i].url = "/article/" + articles_recently[i].id + "/" + articles_recently[i].link + ".html";
-    }
-    return articles_recently;
-}
-
-//处理文章的属性信息：日期(yyyy-MM-dd)、年、月、日、内容长度和url
-function processArticleProp(articles) {
-    for (var i = 0; i < articles.length; i++) {
-        //调整文章的日期(yyyy-MM-dd)、文章长度和url
-        if (articles[i]) {
-            if (articles[i].top_timestamp && !articles[i].title.startsWith(OPT.top_flag)) {
-                articles[i].title = OPT.top_flag + articles[i].title
-            }
-            //调整文章的日期(yyyy-MM-dd)、年、月、日、内容长度和url
-            articles[i].createDate10 = articles[i].createDate.substr(0, 10),
-                articles[i].createDate16 = articles[i].createDate.substr(0, 16),
-                articles[i].createDateYear = articles[i].createDate.substr(0, 4),
-                articles[i].createDateMonth = articles[i].createDate.substr(5, 7),
-                articles[i].createDateDay = articles[i].createDate.substr(8, 10),
-                articles[i].contentLength = articles[i].contentHtml ? articles[i].contentHtml.replace(/<\/?[^>]*>/g, "").replace(/&[a-zA-Z0-9#]+;/g, " ").replace(/\s+/g, "").length : articles[i].contentText.length,
-                articles[i].url = "/article/" + articles[i].id + "/" + articles[i].link + ".html";
-            //最后编辑时间(yyyy-MM-dd HH:mm)
-            if (articles[i].modify_timestamp) {
-                let d = new Date(articles[i].modify_timestamp);
-                articles[i].modifyDate16 = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-            }
-        }
-    }
-}
-
 //获取前台模板源码, template_path:模板的相对路径
 async function getThemeHtml(template_path) {
     template_path = template_path.replace(".html", "")
@@ -1148,21 +1112,6 @@ async function getThemeHtml(template_path) {
     }
 
     return html
-}
-
-//根据文章id，返回上篇、下篇文章，文章内容页底部会用到
-async function getSiblingArticle(id) {
-    id = ("00000" + parseInt(id)).substr(-6);
-    //读取文章列表，查找指定id的文章
-    let articles_all = await getArticlesList(),
-        article_idx = -1;
-    for (var i = 0, len = articles_all.length; i < len; i++)
-        if (articles_all[i].id == id) {
-            article_idx = i;
-            break
-        }
-    let value = await getArticle(id);
-    return null == value || 0 === value.length ? [void 0, void 0, void 0] : [articles_all[article_idx - 1], value, articles_all[article_idx + 1]]
 }
 
 //清除缓存
@@ -1179,24 +1128,6 @@ async function purge(cacheZoneId = ACCOUNT.cacheZoneId, cacheToken = ACCOUNT.cac
         body: '{"purge_everything":true}'
     });
     return (await ret.json()).success
-}
-
-//后台文章列表页的分页加载，返回[文章列表,是否无下一页]
-async function admin_nextPage(pageNo, pageSize = OPT.pageSize) {
-    pageNo = pageNo <= 1 ? 1 : pageNo;
-    let articles_all = await getAllArticlesList(),
-        articles = [];
-    for (var i = (pageNo - 1) * pageSize, s = Math.min(pageNo * pageSize, articles_all.length); i < s; i++) {
-        if (articles_all[i].top_timestamp && !articles_all[i].title.startsWith(OPT.top_flag)) {
-            articles_all[i].title = OPT.top_flag + articles_all[i].title
-        }
-        if (articles_all[i].hidden && !articles_all[i].title.startsWith(OPT.hidden_flag)) {
-            articles_all[i].title = OPT.hidden_flag + articles_all[i].title
-        }
-        articles.push(articles_all[i]);
-    }
-    //articles=sortArticle(articles);
-    return articles
 }
 
 //解析后台请求的参数
@@ -1237,28 +1168,15 @@ async function parseReq(request) {
     }
 }
 
-//为文章分配ID
-async function generateId() {
-    //KV中读取文章数量（初始化为1），并格式化为6位，不足6位前面补零
-    let article_id_seq = await getIndexNum();
-    if ("" === article_id_seq || null === article_id_seq || "[]" === article_id_seq || void 0 === article_id_seq) {
-        await saveIndexNum(1)
-        return "000001"
-    } else {
-        await saveIndexNum(parseInt(article_id_seq) + 1)
-        return ("00000" + (parseInt(article_id_seq) + 1)).substr(-6)
-    }
-}
-
 /**------【⑤.术业有专攻，读写KV方法集】-----**/
 
 /* 【KV的Key的含义】
-  SYSTEM_INDEX_LIST             文章列表(不包含内容)
-  SYSTEM_INDEX_NUM              最新文章序号（不删除文章时，等于文章数量）
-  SYSTEM_VALUE_WidgetMenu       导航栏
-  SYSTEM_VALUE_WidgetCategory   分类目录
-  SYSTEM_VALUE_WidgetTags       标签
-  SYSTEM_VALUE_WidgetLink       链接
+  SYSTEM_INDEX_LIST             文章列表(不包含内容) —— 由 articles 维护
+  SYSTEM_INDEX_NUM              最新文章序号 —— 由 articles 维护
+  SYSTEM_VALUE_WidgetMenu       导航栏(admin saveConfig 写入)
+  SYSTEM_VALUE_WidgetCategory   分类目录(admin saveConfig 写入)
+  SYSTEM_VALUE_WidgetTags       标签 —— 由 articles.save / articles.delete 派生重建
+  SYSTEM_VALUE_WidgetLink       链接(admin saveConfig 写入)
 */
 
 //KV读取，toJson是否转为json，默认false
@@ -1272,14 +1190,6 @@ async function getKV(key, toJson = false) {
     } catch (e) {
         return []
     }
-}
-//KV读取，获取所有文章（含公开+隐藏）:仅后台使用
-async function getAllArticlesList() {
-    return await getKV("SYSTEM_INDEX_LIST", true);
-}
-//KV读取，最新文章序号（不删除文章时，等于文章数量），用于计算下个文章id
-async function getIndexNum() {
-    return await getKV("SYSTEM_INDEX_NUM", true);
 }
 //KV读取，获取导航栏
 async function getWidgetMenu() {
@@ -1297,10 +1207,6 @@ async function getWidgetTags() {
 async function getWidgetLink() {
     return await getKV("SYSTEM_VALUE_WidgetLink", true);
 }
-//KV读取，获取文章详细信息
-async function getArticle(id) {
-    return await getKV(id, true);
-}
 
 //写入KV，value如果未对象类型（数组或者json对象）需要序列化为字符串
 async function saveKV(key, value) {
@@ -1314,14 +1220,6 @@ async function saveKV(key, value) {
     return false;
 }
 
-//写入KV，获取所有文章（含公开+隐藏）:仅后台使用
-async function saveArticlesList(value) {
-    return await saveKV("SYSTEM_INDEX_LIST", value);
-}
-//写入KV，最新文章序号（不删除文章时，等于文章数量），用于计算下个文章id
-async function saveIndexNum(value) {
-    return await saveKV("SYSTEM_INDEX_NUM", value);
-}
 //写入KV，获取导航栏
 async function saveWidgetMenu(value) {
     return await saveKV("SYSTEM_VALUE_WidgetMenu", value);
@@ -1338,7 +1236,7 @@ async function saveWidgetTags(value) {
 async function saveWidgetLink(value) {
     return await saveKV("SYSTEM_VALUE_WidgetLink", value);
 }
-//写入KV，获取文章详细信息
+//写入KV，文章详细信息(仅 import 路径使用,正常写入走 articles.save)
 async function saveArticle(id, value) {
     return await saveKV(id, value);
 }
