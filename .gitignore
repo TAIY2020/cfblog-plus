@@ -3,6 +3,7 @@
 .env.*
 .claude/
 CLAUDE.md
+CONTEXT.md
 .vscode/*
 docs/*
 !.vscode/extensions.json
