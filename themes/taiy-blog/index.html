@@ -115,9 +115,11 @@
                                         <img width="437" height="300" src="{{ &img }}"
                                             class="attachment-post-thumbnail size-post-thumbnail wp-post-image j-lazy"
                                             alt="{{ &title }}" title="{{ &title }}" data-original="{{ &img }}" /></a>
+                                    <div class="item-category-list" style="position:absolute;left:10px;top:15px;display:flex;gap:4px;flex-wrap:wrap;z-index:2;">
                                     {{ #category }}
-                                    <a class="item-category" href="/category/{{&.}}">{{&.}}</a>
+                                    <a class="item-category" href="/category/{{&.}}" style="position:static;">{{&.}}</a>
                                     {{ /category }}
+                                    </div>
 
                                 </div>
                                 <div class="item-content">
